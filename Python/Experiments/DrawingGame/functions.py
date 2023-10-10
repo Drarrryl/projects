@@ -528,6 +528,7 @@ class Button(Obj):
     place_on: pygame.Surface
     pressed: bool
     event: pygame.event.Event
+    selected: bool
 
     def __init__(self, screen: pygame.Surface, name: str, img: str, hover_img: str, press_img: str, size: tuple[int, int], pos: tuple[int, int], event: int = None, text: pygame.font.Font = None) -> None:
         super().__init__(screen)
@@ -556,12 +557,14 @@ class Button(Obj):
             self.event = pygame.event.Event(event)
         else:
             self.event = None
+        self.selected = False
 
     def fix_text(self) -> None:
         self.text_rect = ((self.rect.left+(self.rect.width - self.text.get_surface().get_width())/2), (self.rect.top+(self.rect.height - self.text.get_surface().get_height())/2))
 
     def default(self) -> None:
         self.pressed = False
+        self.selected = False
         self.surface = self.img
         if self.text:
             self.change_text_color('black')
@@ -577,19 +580,24 @@ class Button(Obj):
         self.pressed = True
         self.surface = self.press_img
 
+    def select(self) -> None:
+        self.selected = True
+        self.surface = self.press_img
+
     def update(self, ev: list[pygame.event.Event]) -> None:
-        if self.checkMouse(pygame.mouse):
-            self.hover()
-            for event in ev:
-                if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
-                    self.press()
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    if self.pressed:
-                        if self.event:
-                            pygame.event.post(self.event)
-                    self.hover(True)
-        else:
-            self.default()
+        if not self.selected:
+            if self.checkMouse(pygame.mouse):
+                self.hover()
+                for event in ev:
+                    if event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0]:
+                        self.press()
+                    elif event.type == pygame.MOUSEBUTTONUP:
+                        if self.pressed:
+                            if self.event:
+                                pygame.event.post(self.event)
+                        self.hover(True)
+            else:
+                self.default()
         super().update()
         if self.text:
             self.fix_text()
@@ -652,9 +660,12 @@ class Slider(Obj):
 
 
 class Point:
-    def __init__(self, size: tuple[int, int], color: tuple[int, int, int]) -> None:
+    def __init__(self, size: tuple[int, int], color: tuple[int, int, int], layer: int = 0, blank: bool = False, eraser: bool = False) -> None:
         self.size = size
         self.color = color
+        self.layer = layer
+        self.blank = blank
+        self.eraser = eraser
         self.surface = pygame.Surface(size)
         self.surface.fill(color)
 
@@ -672,10 +683,11 @@ class Pic:
     data: np.ndarray[Point]
     surface: pygame.Surface
 
-    def __init__(self, size: tuple[int, int]) -> None:
+    def __init__(self, size: tuple[int, int], eraser: bool = False) -> None:
         self.size = size
-        self.data = np.full(size, Point((1, 1), (255, 255, 255)))
+        self.data = np.full(size, Point((1, 1), (255, 255, 255), 0, True))
         self.surface = None
+        self.eraser = eraser
 
     def check(self, pos: tuple[int, int]) -> Point:
         return self.data[pos[0]][pos[1]]
@@ -684,7 +696,7 @@ class Pic:
         self.data[pos[0]][pos[1]] = new_data
     
     def clone(self) -> Any:
-        new_Pic = Pic(self.size)
+        new_Pic = Pic(self.size, self.eraser)
         for r in range(self.size[0]):
             for c in range(self.size[1]):
                 new_Pic.update((r,c), self.check((r,c)))
@@ -722,13 +734,15 @@ class Canvas(Obj):
         self.history = [Pic(size)]
     
     def draw(self, pos: tuple[int, int]) -> None:
-        point = Point(self.brush_size, self.brush_color)
+        point = Point(self.brush_size, self.brush_color, self.current_index)
         self.surface.blit(point.surface, (pos[0]-self.brush_size[0]*0.5, pos[1]-self.brush_size[1]*0.5))
+        self.current.eraser = False
         self.current.update(pos, point)
     
     def erase(self, pos: tuple[int, int]) -> None:
-        point = Point(self.brush_size, (255, 255, 255))
+        point = Point(self.brush_size, (255, 255, 255), self.current_index, False, True)
         self.surface.blit(point.surface, (pos[0]-self.brush_size[0]*0.5, pos[1]-self.brush_size[1]*0.5))
+        self.current.eraser = True
         self.current.update(pos, point)
 
     def change_color(self, color: tuple[int, int, int]) -> None:
@@ -756,6 +770,7 @@ class Canvas(Obj):
                 if self.focus:
                     self.focus = False
                     if self.checkMouse(pygame.mouse):
+                        print("UPDATE HISTORY |", self.current.eraser)
                         if self.current_index < len(self.history) - 1:
                             count = 0
                             for i,v in enumerate(self.history):
@@ -785,22 +800,30 @@ class Canvas(Obj):
                 if self.current_index > 0:
                     self.current_index -= 1
                     self.current = self.history[self.current_index].clone()
+                    print("UNDO |", self.current.eraser)
                     self.surface.fill('white')
-                    for r in range(self.current.size[0]):
-                        for c in range(self.current.size[1]):
-                            if self.current.check((r,c)).color != (255, 255, 255):
-                                point = self.current.check((r, c))
-                                self.surface.blit(point.surface, (r-point.surface.get_width()*0.5, c-point.surface.get_height()*0.5))
+                    for i in range(len(self.history)):
+                        for r in range(self.current.size[0]):
+                            for c in range(self.current.size[1]):
+                                if not self.current.check((r, c)).blank:
+                                    point = self.current.check((r, c))
+                                    if point.layer == i:
+                                        self.surface.blit(point.surface, (r-point.surface.get_width()*0.5, c-point.surface.get_height()*0.5))
+                    
             elif event.type == REDO:
                 if self.current_index < len(self.history) - 1:
                     self.current_index += 1
                     self.current = self.history[self.current_index].clone()
+                    print("REDO |", self.current.eraser)
                     self.surface.fill('white')
-                    for r in range(self.current.size[0]):
-                        for c in range(self.current.size[1]):
-                            if self.current.check((r,c)).color != (255, 255, 255):
-                                point = self.current.check((r, c))
-                                self.surface.blit(point.surface, (r-point.surface.get_width()*0.5, c-point.surface.get_height()*0.5))
+                    for i in range(len(self.history)):
+                        for r in range(self.current.size[0]):
+                            for c in range(self.current.size[1]):
+                                if not self.current.check((r, c)).blank:
+                                    point = self.current.check((r, c))
+                                    if point.layer == i:
+                                        self.surface.blit(point.surface, (r-point.surface.get_width()*0.5, c-point.surface.get_height()*0.5))
+                    
             elif event.type == PENCIL:
                 self.tool = 'pencil'
             elif event.type == ERASER:
@@ -1151,6 +1174,22 @@ class Game:
                 self.options()
             elif event.type == MENU:
                 self.menu()
+            elif event.type == PENCIL or event.type == ERASER or event.type == FILL:
+                fill = searchFor(self.objects, "fill button")
+                eraser = searchFor(self.objects, "eraser button")
+                pencil = searchFor(self.objects, "pencil button")
+                if event.type == PENCIL:
+                    eraser.default()
+                    fill.default()
+                    pencil.select()
+                elif event.type == ERASER:
+                    pencil.default()
+                    fill.default()
+                    eraser.select()
+                elif event.type == FILL:
+                    pencil.default()
+                    eraser.default()
+                    fill.select()
         
         if searchFor(self.objects, 'size display'):
             canvas = searchFor(self.objects, 'canvas')
