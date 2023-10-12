@@ -1,8 +1,11 @@
 import pygame
 import pygame.display as display
 import os
+import sys
 from typing import Any
 import numpy as np
+
+sys.setrecursionlimit(400000)
 
 PLAY = pygame.USEREVENT
 MENU = pygame.USEREVENT + 1
@@ -686,7 +689,8 @@ class Pic:
     def __init__(self, size: tuple[int, int], eraser: bool = False) -> None:
         self.size = size
         self.data = np.full(size, Point((1, 1), (255, 255, 255), 0, True))
-        self.surface = None
+        self.surface = pygame.Surface(size)
+        self.surface.fill("white")
         self.eraser = eraser
 
     def check(self, pos: tuple[int, int]) -> Point:
@@ -697,6 +701,7 @@ class Pic:
     
     def clone(self) -> Any:
         new_Pic = Pic(self.size, self.eraser)
+        new_Pic.surface.blit(self.surface, (0, 0))
         for r in range(self.size[0]):
             for c in range(self.size[1]):
                 new_Pic.update((r,c), self.check((r,c)))
@@ -745,6 +750,40 @@ class Canvas(Obj):
         self.current.eraser = True
         self.current.update(pos, point)
 
+    def check_fill(self, pos: tuple[int, int], check_color: tuple[int, int]) -> bool:
+        if inBoundsPic(pos, self.current):
+            r,g,b,alpha = self.surface.get_at(pos)
+            curr_color = (r, g, b)
+            if curr_color == check_color:
+                return True
+        return False
+
+    def fill(self, pos: tuple[int, int], new_color: tuple[int, int, int], check_color: tuple[int, int, int]) -> None:
+        new_color = (int(new_color[0]), int(new_color[1]), int(new_color[2]))
+        point = Point((1, 1), new_color, self.current_index, False, True)
+        current_pic = self.current
+        print("Pos:", pos, "| Check Color:", check_color, "| New Color:", new_color, "| inBounds:", inBoundsPic(pos, current_pic))
+        if inBoundsPic(pos, current_pic):
+            #curr_color = current_pic.check(pos).color
+            r,g,b,alpha = self.surface.get_at(pos)
+            curr_color = (r, g, b)
+            if curr_color == check_color:
+                self.surface.blit(point.surface, pos)
+                self.current.eraser = False
+                self.current.update(pos, point)
+
+                if self.check_fill((pos[0]+1, pos[1]), check_color):
+                    self.fill((pos[0]+1, pos[1]), new_color, check_color)
+                
+                if self.check_fill((pos[0]-1, pos[1]), check_color):
+                    self.fill((pos[0]-1, pos[1]), new_color, check_color)
+                
+                if self.check_fill((pos[0], pos[1]+1), check_color):
+                    self.fill((pos[0], pos[1]+1), new_color, check_color)
+                
+                if self.check_fill((pos[0], pos[1]-1), check_color):
+                    self.fill((pos[0], pos[1]-1), new_color, check_color)
+
     def change_color(self, color: tuple[int, int, int]) -> None:
         self.brush_color = color
     
@@ -767,10 +806,13 @@ class Canvas(Obj):
                     self.erase((x, y))
         for event in ev:
             if event.type == pygame.MOUSEBUTTONUP and self.focus and not pygame.mouse.get_pressed()[0]:
+                if self.tool == 'fill':
+                    r,g,b,alpha = self.surface.get_at((x, y))
+                    self.fill((x, y), self.brush_color, (r, g, b))
                 if self.focus:
                     self.focus = False
                     if self.checkMouse(pygame.mouse):
-                        print("UPDATE HISTORY |", self.current.eraser)
+                        self.current.surface.blit(self.surface, (0, 0))
                         if self.current_index < len(self.history) - 1:
                             count = 0
                             for i,v in enumerate(self.history):
@@ -781,7 +823,6 @@ class Canvas(Obj):
                             self.history.append(self.current)
                             self.current_index += 1
                             self.current = self.current.clone()
-                            
                         elif self.current_index == len(self.history) - 1:
                             self.history.append(self.current)
                             self.current_index += 1
@@ -800,36 +841,35 @@ class Canvas(Obj):
                 if self.current_index > 0:
                     self.current_index -= 1
                     self.current = self.history[self.current_index].clone()
-                    print("UNDO |", self.current.eraser)
-                    self.surface.fill('white')
+                    self.surface = self.current.surface
+                    """self.surface.fill('white')
                     for i in range(len(self.history)):
                         for r in range(self.current.size[0]):
                             for c in range(self.current.size[1]):
                                 if not self.current.check((r, c)).blank:
                                     point = self.current.check((r, c))
                                     if point.layer == i:
-                                        self.surface.blit(point.surface, (r-point.surface.get_width()*0.5, c-point.surface.get_height()*0.5))
+                                        self.surface.blit(point.surface, (r-point.surface.get_width()*0.5, c-point.surface.get_height()*0.5))"""
                     
             elif event.type == REDO:
                 if self.current_index < len(self.history) - 1:
                     self.current_index += 1
                     self.current = self.history[self.current_index].clone()
-                    print("REDO |", self.current.eraser)
-                    self.surface.fill('white')
-                    for i in range(len(self.history)):
+                    self.surface = self.current.surface
+                    """for i in range(len(self.history)):
                         for r in range(self.current.size[0]):
                             for c in range(self.current.size[1]):
                                 if not self.current.check((r, c)).blank:
                                     point = self.current.check((r, c))
                                     if point.layer == i:
-                                        self.surface.blit(point.surface, (r-point.surface.get_width()*0.5, c-point.surface.get_height()*0.5))
+                                        self.surface.blit(point.surface, (r-point.surface.get_width()*0.5, c-point.surface.get_height()*0.5))"""
                     
             elif event.type == PENCIL:
                 self.tool = 'pencil'
             elif event.type == ERASER:
                 self.tool = 'eraser'
             elif event.type == FILL:
-                print('fill')
+                self.tool = 'fill'
         super().update()
 
 
@@ -1274,6 +1314,7 @@ class Game:
 
         pencil_button = Button(self.screen, 'pencil button', 'small_button.png', 'small_button_hovered.png', 'small_button_pressed.png', (40, 40), (450, 700), PENCIL)
         pencil_image = Image(self.screen, 'pencil image', 'pencil.png', (30, 30), (20, 20))
+        pencil_button.select()
         pencil_image.place_onto(pencil_button)
         self.objects.append(pencil_image)
         self.objects.append(pencil_button)
@@ -1317,7 +1358,6 @@ class Game:
         redo_button = Button(self.screen, 'redo button', 'button.png', 'button_hovered.png', 'button_pressed.png', (50, 20), (600, 650), REDO, pygame.font.SysFont('Verdana', 15, True))
         redo_button.change_text('redo', 'black')
         self.objects.append(redo_button)
-
 
 
     def options(self) -> None:
@@ -1452,12 +1492,6 @@ def makeLight(objects: list[Obj]) -> None:
             elif obj.name == "platform":
                 obj.change_img('platform.png')
 
-def mouseInBounds(coords: tuple[int], rect: pygame.rect.Rect) -> bool:
-    if coords[0] > rect.left and coords[0] < rect.right:
-        if coords[1] < rect.bottom and coords[1] > rect.top:
-            return True
-    return False
-
 def queueSongs(lst: list[str]) -> None:
     pygame.mixer.music.unload()
     os.chdir('..')
@@ -1482,7 +1516,19 @@ def refresh(screen: pygame.Surface, bg: pygame.Surface, objects: list[Obj], ev: 
             obj.update()
     display.flip()
 
-def mouseInBounds(coords: tuple[int], rect: pygame.rect.Rect) -> bool:
+def inBounds(pos: tuple[int, int], rect: pygame.rect.Rect) -> bool: 
+    if pos[0] > rect.left and pos[0] < rect.right:
+        if pos[1] < rect.bottom and pos[1] > rect.top:
+            return True
+    return False
+
+def inBoundsPic(pos: tuple[int, int], pic: Pic) -> bool:
+    if pos[0] >= 0 and pos[0] < pic.size[0]:
+        if pos[1] >= 0 and pos[1] < pic.size[1]:
+            return True
+    return False
+
+def mouseInBounds(coords: tuple[int], rect: pygame.rect.Rect) -> bool: 
     if coords[0] > rect.left and coords[0] < rect.right:
         if coords[1] < rect.bottom and coords[1] > rect.top:
             return True
