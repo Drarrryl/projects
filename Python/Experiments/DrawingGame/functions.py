@@ -762,7 +762,6 @@ class Canvas(Obj):
         new_color = (int(new_color[0]), int(new_color[1]), int(new_color[2]))
         point = Point((1, 1), new_color, self.current_index, False, True)
         current_pic = self.current
-        print("Pos:", pos, "| Check Color:", check_color, "| New Color:", new_color, "| inBounds:", inBoundsPic(pos, current_pic))
         if inBoundsPic(pos, current_pic):
             #curr_color = current_pic.check(pos).color
             r,g,b,alpha = self.surface.get_at(pos)
