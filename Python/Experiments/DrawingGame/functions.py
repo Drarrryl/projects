@@ -721,6 +721,7 @@ class Canvas(Obj):
     history: list[Pic]
     current: Pic
     current_index: int
+    filling: bool
 
     def __init__(self, screen: pygame.Surface, name: str, size: tuple[int, int], pos: tuple[int, int]) -> None:
         super().__init__(screen, name)
@@ -737,6 +738,7 @@ class Canvas(Obj):
         self.current = Pic(size)
         self.current_index = 0
         self.history = [Pic(size)]
+        self.filling = False
     
     def draw(self, pos: tuple[int, int]) -> None:
         point = Point(self.brush_size, self.brush_color, self.current_index)
@@ -766,22 +768,23 @@ class Canvas(Obj):
             #curr_color = current_pic.check(pos).color
             r,g,b,alpha = self.surface.get_at(pos)
             curr_color = (r, g, b)
-            if curr_color == check_color:
-                self.surface.blit(point.surface, pos)
-                self.current.eraser = False
-                self.current.update(pos, point)
+            if curr_color != new_color:
+                if curr_color == check_color:
+                    self.surface.blit(point.surface, pos)
+                    self.current.eraser = False
+                    self.current.update(pos, point)
 
-                if self.check_fill((pos[0]+1, pos[1]), check_color):
-                    self.fill((pos[0]+1, pos[1]), new_color, check_color)
-                
-                if self.check_fill((pos[0]-1, pos[1]), check_color):
-                    self.fill((pos[0]-1, pos[1]), new_color, check_color)
-                
-                if self.check_fill((pos[0], pos[1]+1), check_color):
-                    self.fill((pos[0], pos[1]+1), new_color, check_color)
-                
-                if self.check_fill((pos[0], pos[1]-1), check_color):
-                    self.fill((pos[0], pos[1]-1), new_color, check_color)
+                    if self.check_fill((pos[0]+1, pos[1]), check_color):
+                        self.fill((pos[0]+1, pos[1]), new_color, check_color)
+                    
+                    if self.check_fill((pos[0]-1, pos[1]), check_color):
+                        self.fill((pos[0]-1, pos[1]), new_color, check_color)
+                    
+                    if self.check_fill((pos[0], pos[1]+1), check_color):
+                        self.fill((pos[0], pos[1]+1), new_color, check_color)
+                    
+                    if self.check_fill((pos[0], pos[1]-1), check_color):
+                        self.fill((pos[0], pos[1]-1), new_color, check_color)
 
     def change_color(self, color: tuple[int, int, int]) -> None:
         self.brush_color = color
@@ -805,9 +808,12 @@ class Canvas(Obj):
                     self.erase((x, y))
         for event in ev:
             if event.type == pygame.MOUSEBUTTONUP and self.focus and not pygame.mouse.get_pressed()[0]:
-                if self.tool == 'fill':
+                if self.tool == 'fill' and not self.filling:
+                    self.filling = True
                     r,g,b,alpha = self.surface.get_at((x, y))
+                    print("Filling")
                     self.fill((x, y), self.brush_color, (r, g, b))
+                    self.filling = False
                 if self.focus:
                     self.focus = False
                     if self.checkMouse(pygame.mouse):

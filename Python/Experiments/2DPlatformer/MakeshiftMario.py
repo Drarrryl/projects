@@ -212,10 +212,10 @@ stars = Stars(0, 0)
 game = Game(screen, grass, on_screen_objects, player, moving_sprites, 
             background_objs, foreground_objs, interactive_objs, textbox_objs, button_objs, songs)
 
-game.level = 9
-game.next_level()
+#game.level = 9
+#game.next_level()
 
-#game.main()
+game.main()
 
 current_time = 0
 
