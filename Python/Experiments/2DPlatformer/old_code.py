@@ -180,14 +180,16 @@ moving_sprites.add(player)
 
 stars = Stars(0, 0)
 
+songs = ['bgm1.wav', 'bgm2.wav', 'bgm3.wav', 'bgm4.wav', 'bgm5.wav', 'bgm6.wav']
+
 game = Game(screen, grass, on_screen_objects, player, moving_sprites, 
-            background_objs, foreground_objs, interactive_objs, textbox_objs, button_objs)
+            background_objs, foreground_objs, interactive_objs, textbox_objs, button_objs, songs)
 
-game.level = 9
-game.next_level()
+#game.level = 9
+#game.next_level()
 
-#game.main()
-#pygame.time.set_timer(LEVELDISAPPEAR, 2000, 1)
+game.main()
+pygame.time.set_timer(LEVELDISAPPEAR, 2000, 1)
 
 current_time = 0
 
@@ -503,7 +505,7 @@ while True:
                 moving_sprites.add(stars)
                 pygame.time.set_timer(DIZZY, DIZZYTIME)
         updateLives(player, on_screen_objects)
-        updateText(on_screen_objects)
+        updateGUI(on_screen_objects)
         moving_sprites.draw(screen)
         moving_sprites.update()
         updatePlayer(player, on_screen_objects, screen)

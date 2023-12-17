@@ -36,8 +36,10 @@ heart_box.rect.right = width - 20
 heart1 = BackgroundObj(screen, "heart1", 'heart.png', 1, (heart_box.rect.left + 15, heart_box.rect.centery), (35, 35))
 heart2 = BackgroundObj(screen, "heart2", 'heart.png', 1, (heart_box.rect.centerx, heart_box.rect.centery), (35, 35))
 heart3 = BackgroundObj(screen, "heart3", 'heart.png', 1, (heart_box.rect.right - 15, heart_box.rect.centery), (35, 35))
+wasd = BackgroundObj(screen, "wasd", 'new_wasd.png', 0.4, (screen.get_rect().centerx, screen.get_rect().centery-25), None)
+space = BackgroundObj(screen, "space", 'new_space.png', 0.3, (screen.get_rect().centerx, screen.get_rect().centery+75), None)
 
-background_objs = [sky, sun, cloud1, cloud2, cloud3, cloud4, cloud5, heart1, heart2, heart3]
+background_objs = [sky, sun, cloud1, cloud2, cloud3, cloud4, cloud5, heart1, heart2, heart3, wasd, space]
 
 # Textbox objects
 title_text = pygame.font.SysFont('Verdana', 60, True)
@@ -212,7 +214,7 @@ stars = Stars(0, 0)
 game = Game(screen, grass, on_screen_objects, player, moving_sprites, 
             background_objs, foreground_objs, interactive_objs, textbox_objs, button_objs, songs)
 
-#game.level = 9
+#game.level = 8
 #game.next_level()
 
 game.main()
@@ -540,6 +542,7 @@ while True:
         moving_sprites.draw(screen)
         moving_sprites.update()
         updatePlayer(player, on_screen_objects, screen)
+        updateLifeGUI(on_screen_objects)
         updateGUI(on_screen_objects)
         updateLives(player, on_screen_objects)
         for curr_enemy in game.enemies:

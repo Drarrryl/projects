@@ -647,6 +647,8 @@ class InteractiveObj(Obj):
     direction: str
     place_on: pygame.Surface
 
+    bound: tuple[int, int, int | None, int | None]
+
     def __init__(self, screen: pygame.Surface, name: str, img: str, scale: int, pos: tuple[int, int], size: tuple[int, int] = None, speed: int = 0):
         super().__init__(screen, name)
         self.img = img
@@ -663,6 +665,8 @@ class InteractiveObj(Obj):
         self.place(pos[0], pos[1])
         self.speed = speed
         self.direction = None
+
+        self.bound = None
     
     def clone(self) -> Obj:
         return InteractiveObj(self.screen, self.name, self.img, self.scale, self.pos, self.size, self.speed)
@@ -685,6 +689,12 @@ class InteractiveObj(Obj):
         else:
             self.surface = pygame.transform.scale(pygame.image.load(new_img), self.size)
 
+    def boundTo(self, left: int, right: int, bottom: int = None, top: int = None):
+        if bottom and top:
+            self.bound = (left, right, bottom, top)
+        else:
+            self.bound = (left, right, None, None)
+
     def update(self, alpha: int = None) -> None:
         if self.direction == 'right':
             super().move(self.speed, 0)
@@ -694,6 +704,18 @@ class InteractiveObj(Obj):
             super().move(0, -self.speed)
         elif self.direction == 'down':
             super().move(0, self.speed)
+        
+        if self.bound:
+            if self.rect.left < self.bound[0]:
+                self.rect.left = self.bound[0]
+            if self.rect.right > self.bound[1]:
+                self.rect.right = self.bound[1]
+            if self.bound[2] and self.bound[3]:
+                if self.rect.bottom > self.bound[2]:
+                    self.rect.bottom = self.bound[2]
+                if self.rect.top < self.bound[3]:
+                    self.rect.top = self.bound[3]
+
         super().update()
 
 
@@ -794,6 +816,8 @@ class Enemy(pygame.sprite.Sprite):
 
     floor: ForegroundObj
 
+    bound: tuple[int, int]
+
     def __init__(self, x: int, y: int) -> None:
         super().__init__()
         self.sprites = []
@@ -839,6 +863,8 @@ class Enemy(pygame.sprite.Sprite):
         self.gravityvel = self.init_gravityvel
 
         self.floor = None
+
+        self.bound = None
     
     def move_right(self) -> None:
         self.moving_right = True
@@ -888,6 +914,12 @@ class Enemy(pygame.sprite.Sprite):
                 return True
         return False
 
+    def boundTo(self, obj: Obj, left: int = None, right: int = None):
+        if obj is not None:
+            self.bound = (obj.rect.left, obj.rect.right)
+        else:
+            self.bound = (left, right)
+
     def update(self) -> None:
         if self.is_animating: # Jumping Animation
             self.current_sprite += 0.3
@@ -926,7 +958,12 @@ class Enemy(pygame.sprite.Sprite):
             self.vel += self.accel
             if self.vel > self.maxspeed:
                 self.vel = self.maxspeed
-
+        if self.bound:
+            if self.rect.left < self.bound[0]:
+                self.rect.left = self.bound[0]
+            elif self.rect.right > self.bound[1]:
+                self.rect.right = self.bound[1]
+        
         self.image = self.sprites[int(self.current_sprite)]
 
 
@@ -1549,9 +1586,14 @@ class Game():
         pygame.time.set_timer(FIREMOVE, 1000)
 
     def generate(self, type: str = '') -> None:
+        enemy1_range = 200
+        enemy2_range = 250
+        enemy3_range = 250
+        fire_range = 100
         self.stage = 0
         for obj in self.background_objs:
-            self.on_screen_objects.append(obj)
+            if obj.name != "wasd" and obj.name != "space":
+                self.on_screen_objects.append(obj)
         for obj in self.foreground_objs:
             if obj.name == "grass":
                 self.on_screen_objects.append(obj)
@@ -1693,6 +1735,7 @@ class Game():
             left_enemy_platform = ForegroundObj
             right_enemy_platform = ForegroundObj
             chest_platform = ForegroundObj
+
             for object in self.foreground_objs:
                 if object.name == "enemy_platform":
                     left_enemy_platform = object.clone()
@@ -1723,10 +1766,17 @@ class Game():
                     chest.rect.centerx = chest_platform.rect.centerx
                     self.on_screen_objects.append(chest)
             
+            wasd = searchFor(self.background_objs, 'wasd').clone()
+            self.on_screen_objects.append(wasd)
+
+            space = searchFor(self.background_objs, 'space').clone()
+            self.on_screen_objects.append(space)
+
             enemy1 = Enemy(left_enemy_platform.rect.centerx, left_enemy_platform.rect.top - 25)
             self.moving_sprites.add(enemy1)
             self.enemies.append(enemy1)
             enemy1.move_left()
+
             enemy2 = Enemy(right_enemy_platform.rect.centerx, right_enemy_platform.rect.top - 25)
             self.moving_sprites.add(enemy2)
             self.enemies.append(enemy2)
@@ -1774,6 +1824,7 @@ class Game():
             self.moving_sprites.add(enemy1)
             self.enemies.append(enemy1)
             enemy1.move_left()
+            enemy1.boundTo(None, left_roof.rect.right - enemy1_range, left_roof.rect.right)
 
         elif self.level == 3:
             self.player.restart((50, self.base.rect.top - 25), self.on_screen_objects)
@@ -1817,10 +1868,13 @@ class Game():
             self.moving_sprites.add(enemy1)
             self.enemies.append(enemy1)
             enemy1.move_left()
+            enemy1.boundTo(None, left_roof.rect.right - enemy1_range, left_roof.rect.right)
+
             enemy2 = Enemy(right_roof.rect.left + 20, right_roof.rect.top - 25)
             self.moving_sprites.add(enemy2)
             self.enemies.append(enemy2)
             enemy2.move_right()
+            enemy2.boundTo(None, right_roof.rect.left, right_roof.rect.left + enemy2_range)
 
         elif self.level == 4:
             self.player.restart((50, self.base.rect.top - 25), self.on_screen_objects)
@@ -1868,10 +1922,13 @@ class Game():
             self.moving_sprites.add(enemy1)
             self.enemies.append(enemy1)
             enemy1.move_left()
+            enemy1.boundTo(None, left_roof.rect.right - enemy1_range, left_roof.rect.right)
+
             enemy2 = Enemy(right_roof.rect.left, right_roof.rect.top - 25)
             self.moving_sprites.add(enemy2)
             self.enemies.append(enemy2)
             enemy2.move_right()
+            enemy2.boundTo(None, right_roof.rect.left, level_three_spikes.rect.left)
 
         elif self.level == 5:
             self.player.restart((50, self.base.rect.top - 25), self.on_screen_objects)
@@ -1919,14 +1976,19 @@ class Game():
             self.moving_sprites.add(enemy1)
             self.enemies.append(enemy1)
             enemy1.move_left()
+            enemy1.boundTo(None, left_roof.rect.right - enemy1_range, left_roof.rect.right)
+
             enemy2 = Enemy(right_roof.rect.left, right_roof.rect.top - 25)
             self.moving_sprites.add(enemy2)
             self.enemies.append(enemy2)
             enemy2.move_right()
+            enemy2.boundTo(None, right_roof.rect.left, level_three_spikes.rect.left)
+
             enemy3 = Enemy(level_one_spikes.rect.left - 25, self.base.rect.top - 25)
             self.moving_sprites.add(enemy3)
             self.enemies.append(enemy3)
             enemy3.move_left()
+            enemy3.boundTo(None, enemy3.rect.centerx-enemy3_range, level_one_spikes.rect.left)
 
         elif self.level == 6:
             self.player.restart((50, self.base.rect.top - 25), self.on_screen_objects)
@@ -1975,6 +2037,9 @@ class Game():
                     fire = object.clone()
                     fire.rect.centerx = level_one_spikes.rect.centerx - 50
                     fire.rect.centery = level_one_spikes.rect.centery - 100
+
+                    fire.boundTo(fire.rect.left, fire.rect.right + fire_range, fire.rect.bottom, fire.rect.top - fire_range)
+
                     self.on_screen_objects.append(fire)
                 elif object.name == "flag":
                     if not self.player.get_checkpoint() == self.level:
@@ -1986,14 +2051,19 @@ class Game():
             self.moving_sprites.add(enemy1)
             self.enemies.append(enemy1)
             enemy1.move_left()
+            enemy1.boundTo(None, left_roof.rect.right - enemy1_range, left_roof.rect.right)
+
             enemy2 = Enemy(right_roof.rect.left, right_roof.rect.top - 25)
             self.moving_sprites.add(enemy2)
             self.enemies.append(enemy2)
             enemy2.move_right()
+            enemy2.boundTo(None, right_roof.rect.left, level_three_spikes.rect.left)
+
             enemy3 = Enemy(level_one_spikes.rect.left - 25, self.base.rect.top - 25)
             self.moving_sprites.add(enemy3)
             self.enemies.append(enemy3)
             enemy3.move_left()
+            enemy3.boundTo(None, enemy3.rect.centerx-enemy3_range, level_one_spikes.rect.left)
 
         elif self.level == 7:
             self.player.restart((50, self.base.rect.top - 25), self.on_screen_objects)
@@ -2045,6 +2115,10 @@ class Game():
                     fire2 = object.clone()
                     fire2.rect.centerx = level_two_spikes.rect.centerx - 50
                     fire2.rect.centery = level_two_spikes.rect.centery - 75
+
+                    fire.boundTo(fire.rect.left, fire.rect.right + fire_range, fire.rect.bottom, fire.rect.top - fire_range)
+                    fire2.boundTo(fire2.rect.left, fire2.rect.right + fire_range, fire2.rect.bottom, fire2.rect.top - fire_range)
+
                     self.on_screen_objects.append(fire)
                     self.on_screen_objects.append(fire2)
             
@@ -2052,14 +2126,19 @@ class Game():
             self.moving_sprites.add(enemy1)
             self.enemies.append(enemy1)
             enemy1.move_left()
+            enemy1.boundTo(None, left_roof.rect.right - enemy1_range, left_roof.rect.right)
+
             enemy2 = Enemy(right_roof.rect.left, right_roof.rect.top - 25)
             self.moving_sprites.add(enemy2)
             self.enemies.append(enemy2)
             enemy2.move_right()
+            enemy2.boundTo(None, right_roof.rect.left, level_three_spikes.rect.left)
+
             enemy3 = Enemy(level_one_spikes.rect.left - 25, self.base.rect.top - 25)
             self.moving_sprites.add(enemy3)
             self.enemies.append(enemy3)
             enemy3.move_left()
+            enemy3.boundTo(None, enemy3.rect.centerx-enemy3_range, level_one_spikes.rect.left)
 
         elif self.level == 8:
             self.player.restart((50, self.base.rect.top - 25), self.on_screen_objects)
@@ -2118,6 +2197,10 @@ class Game():
                     fire2.rect.centerx = level_two_spikes.rect.centerx - 35
                     fire2.rect.centery = level_two_spikes.rect.centery - 75
                     fire2.speed = 3
+
+                    fire.boundTo(fire.rect.left, fire.rect.right + fire_range, fire.rect.bottom, fire.rect.top - fire_range)
+                    fire2.boundTo(fire2.rect.left, fire2.rect.right + fire_range, fire2.rect.bottom, fire2.rect.top - fire_range)
+
                     self.on_screen_objects.append(fire)
                     self.on_screen_objects.append(fire2)
                     pygame.time.set_timer(FIREMOVE, 600)
@@ -2128,15 +2211,20 @@ class Game():
             enemy1.move_left()
             enemy1.change_speed(4.0, 4.0)
             pygame.time.set_timer(ENEMY1MOVE, 2300)
+            enemy1.boundTo(None, level_two_spikes.rect.right, bot_roof.rect.right)
+
             enemy2 = Enemy(middle_roof.rect.centerx - 225, middle_roof.rect.top - 25)
             self.moving_sprites.add(enemy2)
             self.enemies.append(enemy2)
             enemy2.move_right()
+            enemy2.boundTo(None, enemy2.rect.centerx, enemy2.rect.centerx + enemy2_range)
+
             enemy3 = Enemy(level_one_spikes.rect.left - 25, self.base.rect.top - 25)
             self.moving_sprites.add(enemy3)
             self.enemies.append(enemy3)
             enemy3.move_left()
             pygame.time.set_timer(ENEMY3MOVE, 1500)
+            enemy3.boundTo(None, enemy3.rect.centerx-(enemy3_range+50), level_one_spikes.rect.left)
 
         elif self.level == 9:
             bot_roof = ForegroundObj
@@ -2205,6 +2293,11 @@ class Game():
                     fire3.rect.centerx = level_three_spikes.rect.centerx - 75
                     fire3.rect.centery = level_three_spikes.rect.centery - 100
                     fire3.speed = 3
+                    
+                    fire.boundTo(fire.rect.left, fire.rect.right + fire_range, fire.rect.bottom, fire.rect.top - fire_range)
+                    fire2.boundTo(fire2.rect.left, fire2.rect.right + fire_range, fire2.rect.bottom, fire2.rect.top - fire_range)
+                    fire3.boundTo(fire3.rect.left, fire3.rect.right + fire_range, fire3.rect.bottom, fire3.rect.top - fire_range)
+
                     self.on_screen_objects.append(fire)
                     self.on_screen_objects.append(fire2)
                     self.on_screen_objects.append(fire3)
@@ -2215,21 +2308,26 @@ class Game():
             enemy1 = Enemy(bot_roof.rect.right - 25, bot_roof.rect.top - 25)
             self.moving_sprites.add(enemy1)
             self.enemies.append(enemy1)
-            enemy1.change_speed(4.0, 4.0)
+            enemy1.change_speed(5.0, 5.0)
             enemy1.move_left()
-            pygame.time.set_timer(ENEMY1MOVE, 2300)
+            pygame.time.set_timer(ENEMY1MOVE, 1850)
+            enemy1.boundTo(None, level_two_spikes.rect.right, bot_roof.rect.right)
+
             enemy2 = Enemy(middle_roof.rect.left + 25, middle_roof.rect.top - 25)
             self.moving_sprites.add(enemy2)
             self.enemies.append(enemy2)
             enemy2.move_right()
             enemy2.change_speed(4.0, 4.0)
             pygame.time.set_timer(ENEMY2MOVE, 2300)
+            enemy2.boundTo(None, middle_roof.rect.left, level_three_spikes.rect.left)
+
             enemy3 = Enemy(level_one_spikes.rect.left - 30, self.base.rect.top - 25)
             self.moving_sprites.add(enemy3)
             self.enemies.append(enemy3)
             enemy3.change_speed(4.0, 4.0)
             enemy3.move_left()
-            pygame.time.set_timer(ENEMY3MOVE, 2000)
+            pygame.time.set_timer(ENEMY3MOVE, 2300)
+            enemy3.boundTo(None, level_two_spikes.rect.right, level_one_spikes.rect.left)
         
         elif self.level == 10:
             self.player.restart((50, self.base.rect.top - 25), self.on_screen_objects)
@@ -2400,6 +2498,11 @@ def updateInteractive(objects: list[Obj], alpha: int = None) -> None:
         if type(object) == InteractiveObj:
             object.update()
 
+def updateLifeGUI(objects: list[Obj]) -> None:
+    for object in objects:
+        if object.name.find("heart") != -1:
+            object.update()
+
 def updateGUI(objects: list[Obj], alpha: int = None) -> None:
     """if alpha:
         for object in objects:
@@ -2462,7 +2565,7 @@ def check_ground(player: Player, lst: list[Obj]) -> ForegroundObj:
     dist = 99999999999999999999999999999
     new_obj = None
     for obj in lst:
-        if (type(obj) == ForegroundObj or type(obj) == Button) and above(player, obj):
+        if (type(obj) == ForegroundObj or type(obj) == Button) and above(player, obj) and obj.name != "exit":
             new_dist = obj.rect.top - player.rect.bottom
             if new_dist < dist:
                 dist = new_dist
