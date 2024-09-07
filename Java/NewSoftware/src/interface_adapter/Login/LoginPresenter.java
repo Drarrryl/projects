@@ -1,5 +1,6 @@
 package interface_adapter.Login;
 
+import interface_adapter.MainMenu.MainMenuViewModel;
 import use_case.Login.LoginOutputBoundary;
 import use_case.Login.LoginOutputData;
 import view.ViewManager;
@@ -18,9 +19,12 @@ public class LoginPresenter implements LoginOutputBoundary {
 
     @Override
     public void prepareSuccessView(LoginOutputData user) {
+        MainMenuViewModel mainMenuViewModel = loginViewModel.getMainMenuViewModel();
         loginViewModel.getState().setUsername(user.getUsername());
-        viewManager.switchToView(loginViewModel.getMainMenuViewModel().getName());
-        loginViewModel.getMainMenuViewModel().setLoggedInUser(user.getUser());
+        viewManager.switchToView(mainMenuViewModel.getName());
+        viewManager.setResolution(mainMenuViewModel.DEFAULT_SIZE);
+        mainMenuViewModel.setLoggedInUser(user.getUser());
+        mainMenuViewModel.getState().setUsername(user.getUsername());
     }
 
     @Override

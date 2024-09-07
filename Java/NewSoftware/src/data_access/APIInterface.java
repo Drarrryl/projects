@@ -1,7 +1,6 @@
 package data_access;
 
-public interface ImageKitIoAPIInterface {
-
+public interface APIInterface {
     /**
      * uploads the json file to the database
      * @exception RuntimeException if there is an error uploading; if so retry.
@@ -17,5 +16,4 @@ public interface ImageKitIoAPIInterface {
      * @param fileName example: data.json
      */
     void download(String dataPath, String fileName);
-
 }

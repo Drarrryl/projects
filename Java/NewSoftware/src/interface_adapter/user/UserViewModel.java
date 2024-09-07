@@ -1,6 +1,9 @@
 package interface_adapter.user;
 
 import entity.User;
+import interface_adapter.Game.GameViewModel;
+import interface_adapter.MainMenu.MainMenuViewModel;
+import view.Game.GameView;
 import view.ViewManager;
 import view.ViewModel;
 
@@ -13,14 +16,20 @@ public class UserViewModel extends ViewModel {
 
     private User loggedInUser;
 
-    public UserViewModel(ViewManager viewManager)
-    {
-        super("Personal", viewManager);
+    public final String PLACEHOLDER_BUTTON_STRING = "Placeholder Game";
+    public final String MAINMENU_BUTTON_STRING = "Back To Main Menu";
 
-        loggedInUser = null;
-    }
+    private GameViewModel gameViewModel;
 
     private UserState state = new UserState();
+
+    public UserViewModel(ViewManager viewManager, GameViewModel gameViewModel)
+    {
+        super("User", viewManager);
+
+        loggedInUser = null;
+        this.gameViewModel = gameViewModel;
+    }
 
     public UserState getState()
     {
@@ -42,5 +51,7 @@ public class UserViewModel extends ViewModel {
     {
         this.loggedInUser = loggedInUser;
     }
+
+    public GameViewModel getGameViewModel() { return this.gameViewModel; }
 
 }

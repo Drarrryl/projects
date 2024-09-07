@@ -9,10 +9,10 @@ import java.util.List;
 
 public class DataAccess implements DataAccessInterface{
 
-    private final String dataPath = "src/data_access/data.json";
+    private final String dataPath = "./data.json";
     private final String fileName = "data.json";
     private JsonObject data;
-    private final ImageKitIoAPIInterface ImageKitIOAPI = new ImageKitIoAPI();
+    private final APIInterface api = new API();
 
     public DataAccess() {
         LoadData();
@@ -25,12 +25,12 @@ public class DataAccess implements DataAccessInterface{
     private void LoadData() {
 
         try {
-            ImageKitIOAPI.download(dataPath, fileName);
+            api.download(dataPath, fileName);
         } catch (Exception e) {
             // try again
             try {
                 Thread.sleep(2000);
-                ImageKitIOAPI.download(dataPath, fileName);
+                api.download(dataPath, fileName);
             } catch (Exception e2) {
                 // try again
                 throw new RuntimeException("Error Downloading from Image Kit, Try again a bit later");
@@ -42,7 +42,6 @@ public class DataAccess implements DataAccessInterface{
         try {
             BufferedReader br = new BufferedReader(new FileReader(dataPath));
             data = gson.fromJson(br, JsonObject.class);
-            System.out.println(gson.fromJson(br, JsonObject.class));
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -64,12 +63,12 @@ public class DataAccess implements DataAccessInterface{
         }
 
         try {
-            ImageKitIOAPI.upload(dataPath, fileName);
+            api.upload(dataPath, fileName);
         } catch (Exception e) {
             // try again
             try {
                 Thread.sleep(2000);
-                ImageKitIOAPI.upload(dataPath, fileName);
+                api.upload(dataPath, fileName);
             } catch (Exception e2) {
                 // try again
                 throw new RuntimeException("Error Uploading to Image Kit, Try again a bit later");
@@ -86,7 +85,7 @@ public class DataAccess implements DataAccessInterface{
             data.get("USER_" + user.getUsername()).getAsJsonObject();
 
         } catch(Exception e) {
-            String strUserData = "{password:" + user.getPassword() + "}";
+            String strUserData = "{\"password\":" + user.getPassword() + "}";
 
             JsonElement userData = JsonParser.parseString(strUserData).getAsJsonObject();
             data.add("USER_" + user.getUsername(), userData);

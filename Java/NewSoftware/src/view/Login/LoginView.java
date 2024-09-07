@@ -2,8 +2,11 @@ package view.Login;
 
 import interface_adapter.Login.LoginController;
 import interface_adapter.Login.LoginViewModel;
+import view.View;
 
+import javax.accessibility.Accessible;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -11,7 +14,7 @@ import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-public class LoginView extends JPanel implements PropertyChangeListener {
+public class LoginView extends View implements PropertyChangeListener {
     private LoginViewModel loginViewModel;
     private LoginController loginController;
 
@@ -23,17 +26,24 @@ public class LoginView extends JPanel implements PropertyChangeListener {
 
     public LoginView(LoginViewModel loginViewModel, LoginController loginController)
     {
-        this.loginViewModel = loginViewModel;
+        super(loginViewModel);
         this.loginController = loginController;
 
         loginButton = new JButton(LoginViewModel.LOGIN_BUTTON_STRING);
         signUpButton = new JButton(LoginViewModel.SIGNUP_BUTTON_STRING);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(LoginViewModel.BACKGROUND_COLOR);
+        buttonPanel.add(loginButton);
+        buttonPanel.add(signUpButton);
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 
         JPanel usernamePanel = new JPanel();
+        usernamePanel.setBackground(LoginViewModel.BACKGROUND_COLOR);
         usernamePanel.add(new JLabel(LoginViewModel.USERNAME_FIELD_STRING));
         usernamePanel.add(usernameInputField);
 
         JPanel passwordPanel = new JPanel();
+        passwordPanel.setBackground(LoginViewModel.BACKGROUND_COLOR);
         passwordPanel.add(new JLabel(LoginViewModel.PASSWORD_FIELD_STRING));
         passwordPanel.add(passwordInputField);
 
@@ -60,6 +70,7 @@ public class LoginView extends JPanel implements PropertyChangeListener {
                         if(e.getSource().equals(signUpButton))
                         {
                             loginViewModel.getViewManager().switchToView(loginViewModel.getSignupViewModel().getName());
+                            loginViewModel.getViewManager().setResolution(loginViewModel.getSignupViewModel().DEFAULT_SIZE);
                         }
                     }
                 }
@@ -101,9 +112,9 @@ public class LoginView extends JPanel implements PropertyChangeListener {
 
         this.add(usernamePanel);
         this.add(passwordPanel);
-        this.add(loginButton);
-        this.add(signUpButton);
+        this.add(buttonPanel);
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        loginViewModel.SetTheme(this, "Default");
     }
 
     @Override

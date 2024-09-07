@@ -4,11 +4,15 @@ import java.time.LocalDateTime;
 
 public class UserState {
 
+    private String username;
+
     public UserState() {}
 
-    public UserState(UserState prev)
-    {
-
+    public String getUsername() {
+        return this.username;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
 }

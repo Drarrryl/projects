@@ -3,6 +3,8 @@ package interface_adapter.Signup;
 import view.ViewManager;
 import view.ViewModel;
 
+import java.awt.*;
+
 public class SignupViewModel extends ViewModel {
 
     public static final String BACK_BUTTON_STRING = "Back";
@@ -16,6 +18,7 @@ public class SignupViewModel extends ViewModel {
     public SignupViewModel(ViewManager viewManager)
     {
         super("Signup", viewManager);
+        this.DEFAULT_SIZE = new Dimension(WINDOW_DEFAULT_SIZE.width/4, WINDOW_DEFAULT_SIZE.height/4);
     }
 
     public SignupState getState()

@@ -1,28 +1,19 @@
 package use_case.User;
 
+import entity.User;
+
 public class UserOutputData {
 
-    private final String username;
-    private String creationTime;
+    private final User user;
 
     private boolean useCaseFailed;
 
-    public UserOutputData(String username, String creationTime, boolean useCaseFailed) {
-        this.username = username;
-        this.creationTime = creationTime;
-        this.useCaseFailed = useCaseFailed;
+    public UserOutputData(User user) {
+        this.user = user;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public String getCreationTime() {
-        return creationTime;
-    }
-
-    public void setCreationTime(String creationTime) {
-        this.creationTime = creationTime;
+    public User getUser() {
+        return user;
     }
 
 }

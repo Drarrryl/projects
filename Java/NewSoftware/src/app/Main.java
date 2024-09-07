@@ -1,22 +1,24 @@
 package app;
 
-import Factory.LoginFactory;
-import Factory.MainMenuFactory;
-import Factory.SignupFactory;
-import Factory.UserFactory;
+import Factory.*;
 import data_access.DataAccess;
 import data_access.DataAccessInterface;
+import interface_adapter.Game.GameViewModel;
 import interface_adapter.Login.LoginViewModel;
 import interface_adapter.MainMenu.MainMenuViewModel;
+import interface_adapter.Options.OptionsViewModel;
 import interface_adapter.Signup.SignupViewModel;
 import interface_adapter.user.UserViewModel;
+import view.Game.GameView;
 import view.Login.LoginView;
 import view.MainMenu.MainMenuView;
+import view.Options.OptionsView;
 import view.Signup.SignupView;
 import view.User.UserView;
 import view.ViewManager;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -31,11 +33,17 @@ public class Main {
         SignupViewModel signupViewModel = new SignupViewModel(viewManager);
         SignupView signupView = SignupFactory.createSignupView(viewManager, signupViewModel, dataAccess, new UserFactory());
 
-        UserViewModel userViewModel = new UserViewModel(viewManager);
+        GameViewModel gameViewModel = new GameViewModel(viewManager);
+        GameView gameView = GameFactory.createGameView(viewManager, gameViewModel, dataAccess);
+
+        UserViewModel userViewModel = new UserViewModel(viewManager, gameViewModel);
         UserView userView = UserFactory.createUserView(viewManager, userViewModel, dataAccess);
 
-        MainMenuViewModel mainMenuViewModel = new MainMenuViewModel(viewManager, userViewModel);
-        MainMenuView mainMenuView = MainMenuFactory.createUserView(viewManager, mainMenuViewModel, dataAccess);
+        OptionsViewModel optionsViewModel = new OptionsViewModel(viewManager);
+        OptionsView optionsView = OptionsFactory.createOptionsView(viewManager, optionsViewModel, dataAccess);
+
+        MainMenuViewModel mainMenuViewModel = new MainMenuViewModel(viewManager, optionsViewModel, userViewModel);
+        MainMenuView mainMenuView = MainMenuFactory.createMainMenuView(viewManager, mainMenuViewModel, dataAccess);
 
         LoginViewModel loginViewModel = new LoginViewModel(viewManager, signupViewModel, mainMenuViewModel);
         LoginView loginView = LoginFactory.createLoginView(viewManager, loginViewModel, dataAccess);
@@ -44,8 +52,11 @@ public class Main {
         viewManager.addView(loginView, loginViewModel.getName());
         viewManager.addView(signupView, signupViewModel.getName());
         viewManager.addView(mainMenuView, mainMenuViewModel.getName());
+        viewManager.addView(optionsView, optionsViewModel.getName());
         viewManager.addView(userView, userViewModel.getName());
+        viewManager.addView(gameView, gameViewModel.getName());
         viewManager.switchToView(loginViewModel.getName());
+        viewManager.setResolution(loginViewModel.DEFAULT_SIZE);
 
         applicationFrame.setLocationRelativeTo(null);
         applicationFrame.setVisible(true);

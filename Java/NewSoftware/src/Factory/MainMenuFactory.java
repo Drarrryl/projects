@@ -18,7 +18,7 @@ import view.ViewManager;
 
 public class MainMenuFactory {
 
-    public static MainMenuView createUserView(ViewManager viewManager,
+    public static MainMenuView createMainMenuView(ViewManager viewManager,
                                           MainMenuViewModel mainMenuViewModel,
                                           DataAccessInterface userDataAccess)
     {

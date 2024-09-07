@@ -1,6 +1,7 @@
 package interface_adapter.MainMenu;
 
 import interface_adapter.Login.LoginViewModel;
+import interface_adapter.user.UserViewModel;
 import use_case.Login.LoginOutputData;
 import use_case.MainMenu.MainMenuOutputBoundary;
 import use_case.MainMenu.MainMenuOutputData;
@@ -19,13 +20,16 @@ public class MainMenuPresenter implements MainMenuOutputBoundary {
 
     @Override
     public void prepareSuccessView(MainMenuOutputData user) {
-        mainMenuViewModel.getState().setUsername(user.getUsername());
-        viewManager.switchToView(mainMenuViewModel.getUserViewModel().getName());
-        mainMenuViewModel.getUserViewModel().setLoggedInUser(user.getUser());
+        UserViewModel userViewModel = mainMenuViewModel.getUserViewModel();
+        viewManager.switchToView(userViewModel.getName());
+        viewManager.setResolution(userViewModel.DEFAULT_SIZE);
+        userViewModel.setLoggedInUser(user.getUser());
+        userViewModel.getState().setUsername(user.getUsername());
     }
 
     @Override
     public void prepareFailView(String error) {
         viewManager.showErrorMessage(error);
+        viewManager.closeView();
     }
 }

@@ -14,16 +14,6 @@ public class SignupState {
 
     public SignupState() {}
 
-    public SignupState(SignupState state)
-    {
-        username = state.username;
-        password = state.password;
-        repeatPassword = state.repeatPassword;
-        usernameError = state.usernameError;
-        passwordError = state.passwordError;
-        creationTime = state.creationTime;
-    }
-
     public String getUsername()
     {
         return username;

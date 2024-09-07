@@ -23,6 +23,7 @@ public class SignupPresenter implements SignupOutputBoundary {
         signupViewModel.getState().setCreationTime(user.getCreationTime());
         JOptionPane.showMessageDialog(null, "Account created!");
         viewManager.switchToLastView();
+        viewManager.setResolution(viewManager.getLastViewModel().DEFAULT_SIZE);
     }
 
     @Override

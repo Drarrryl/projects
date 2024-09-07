@@ -2,14 +2,17 @@ package view.Signup;
 
 import interface_adapter.Signup.SignupController;
 import interface_adapter.Signup.SignupViewModel;
+import view.View;
+import view.ViewManager;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-public class SignupView extends JPanel {
+public class SignupView extends View {
     private SignupViewModel signupViewModel;
     private SignupController signupController;
 
@@ -22,11 +25,15 @@ public class SignupView extends JPanel {
 
     public SignupView(SignupViewModel signupViewModel, SignupController signupController)
     {
-        this.signupViewModel = signupViewModel;
+        super(signupViewModel);
         this.signupController = signupController;
 
         backButton = new JButton(SignupViewModel.BACK_BUTTON_STRING);
         signUpButton = new JButton(SignupViewModel.SIGNUP_BUTTON_STRING);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(backButton);
+        buttonPanel.add(signUpButton);
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 
         JPanel usernamePanel = new JPanel();
         usernamePanel.add(new JLabel(SignupViewModel.USERNAME_FIELD_STRING));
@@ -44,7 +51,9 @@ public class SignupView extends JPanel {
                 new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        signupViewModel.getViewManager().switchToLastView();
+                        ViewManager viewManager = signupViewModel.getViewManager();
+                        viewManager.switchToLastView();
+                        viewManager.setResolution(viewManager.getLastViewModel().DEFAULT_SIZE);
                     }
                 }
         );
@@ -115,8 +124,8 @@ public class SignupView extends JPanel {
         this.add(usernamePanel);
         this.add(passwordPanel1);
         this.add(passwordPanel2);
-        this.add(signUpButton);
-        this.add(backButton);
+        this.add(buttonPanel);
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        signupViewModel.SetTheme(this, "Default");
     }
 }
