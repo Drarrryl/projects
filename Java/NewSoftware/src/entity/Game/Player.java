@@ -1,37 +1,72 @@
 package entity.Game;
 
+import interface_adapter.Game.GameController;
+import interface_adapter.Game.Physics;
+import view.Game.GameView;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.nio.Buffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Player extends GameObject implements PlayerInterface {
+public class Player extends GameObject implements NonCollidable {
 
     private double velX = 0;
     private double velY = 0;
 
     public boolean grounded;
 
-    private BufferedImage player;
+    private BufferedImage idle;
+    private BufferedImage jump1;
+    private boolean jump1State;
+    private BufferedImage jump2;
+    private boolean jump2State;
+
+    private int jumpTimer = -1;
+    private float jumpAccel = 2.0f;
+    private float jumpInitVel = 20.0f;
+    private float jumpVel;
+    private boolean isJumping;
 
     public Player(double x, double y, HashMap<String, BufferedImage> playerSprites) {
-        super(x, y);
+        super(x, y, playerSprites.get("Idle").getWidth(), playerSprites.get("Idle").getHeight());
 
-        player = playerSprites.get("Idle");
+        idle = playerSprites.get("Idle");
+        jump1 = playerSprites.get("Jump 1");
+        jump2 = playerSprites.get("Jump 2");
+
+        this.jumpVel = jumpInitVel;
     }
 
     @Override
-    public void tick(Canvas canvas) {
+    public void tick(Canvas gameCanvas, GameController controller) {
         setX(getX() + velX);
         setY(getY() + velY);
 
+        updateJumpTimer();
+        updateJump();
+
         gravity();
-        checkGround(canvas);
-        resetPos(canvas);
+        checkGround(controller.getCollidableObjs());
+        resetPos(gameCanvas, controller.getCollidableObjs());
     }
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(player, (int) getX(), (int) getY(), null);
+        if (jump1State) {
+            setWidth(jump1.getWidth());
+            setHeight(jump1.getHeight());
+            g.drawImage(jump1, (int) getX(), (int) getY(), null);
+        } else if (jump2State) {
+            setWidth(jump2.getWidth());
+            setHeight(jump2.getHeight());
+            g.drawImage(jump2, (int) getX(), (int) getY(), null);
+        } else {
+            setWidth(idle.getWidth());
+            setHeight(idle.getHeight());
+            g.drawImage(idle, (int) getX(), (int) getY(), null);
+        }
     }
 
     public void setVelX(double velX) {
@@ -44,22 +79,68 @@ public class Player extends GameObject implements PlayerInterface {
 
     public void gravity() {
         if (!grounded) {
-            setY(getY() + 1);
+            setY(getY() + 2);
         }
     }
 
-    public void checkGround(Canvas canvas) {
-        grounded = getY() >= (canvas.getHeight() - this.player.getHeight());
+    public void checkGround(ArrayList<Collidable> collidables) {
+        grounded = Physics.Collision(this, collidables) != null;
     }
 
-    public void resetPos(Canvas canvas) {
-        int xOffset = canvas.getWidth() - this.player.getWidth();
-        int yOffset = canvas.getHeight() - this.player.getHeight();
+    public void resetPos(Canvas canvas, ArrayList<Collidable> collidables) {
+        int xOffset = canvas.getWidth() - this.idle.getWidth();
+        int yOffset = canvas.getHeight() - this.idle.getHeight();
+
+        GameObject ground = Physics.Collision(this, collidables);
+
+        if (ground != null) {
+            yOffset = (int) ground.getY() - this.idle.getHeight();
+        }
 
         if (getX() < 0) setX(0);
         if (getX() > xOffset) setX(xOffset);
 
         if (getY() < 0) setY(0);
         if (grounded) setY(yOffset);
+    }
+
+    public void jump() {
+        if (!jump1State && !jump2State) {
+            jumpTimer = 10;
+        }
+    }
+
+    public void updateJump() {
+        if (isJumping) {
+            setVelY(-this.jumpVel);
+            this.jumpVel -= this.jumpAccel;
+
+            if (this.jumpVel <= 0) {
+                isJumping = false;
+                this.jumpVel = this.jumpInitVel;
+                setVelY(0);
+            }
+        }
+    }
+
+    public void updateJumpTimer() {
+        if (jumpTimer >= 0) {
+            jumpTimer -= 1;
+        }
+
+        if (jumpTimer < 0) {
+            jump1State = false;
+            jump2State = false;
+        } else if (jumpTimer == 0) {
+            jump1State = false;
+            jump2State = false;
+            isJumping = true;
+        } else if (jumpTimer < 5) {
+            jump2State = true;
+            jump1State = false;
+        } else {
+            jump1State = true;
+            jump2State = false;
+        }
     }
 }

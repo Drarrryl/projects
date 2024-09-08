@@ -50,14 +50,14 @@ public class GameView extends View implements Runnable {
         gameCanvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
         gameCanvas.addKeyListener(new KeyInput(this));
 
-        bgImage = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-
         BufferedImageLoader loader = new BufferedImageLoader();
 
         HashMap<String, BufferedImage> playerSprites = new HashMap<>();
         tileSprites = new HashMap<>();
 
         try {
+            bgImage = loader.loadImage("/images/bg.png");
+
             playerSprites.put("Idle", loader.loadImage("/images/idle.png"));
             playerSprites.put("Jump 1", loader.loadImage("/images/jump_1.png"));
             playerSprites.put("Jump 2", loader.loadImage("/images/jump_2.png"));
@@ -135,7 +135,7 @@ public class GameView extends View implements Runnable {
     }
 
     private void tick() {
-        gameController.tick(gameCanvas);
+        gameController.tick(gameCanvas, tileSprites);
     }
 
     private void render() {
@@ -205,7 +205,7 @@ public class GameView extends View implements Runnable {
         int WIDTH = gameCanvas.getPreferredSize().width;
         int TILEWIDTH = tiles.get("Grass").getWidth();
         float ratio = (float) WIDTH / TILEWIDTH;
-        int numTiles = Math.round(ratio);
+        int numTiles = Math.round(ratio) + 2;
 
         int HEIGHT = gameCanvas.getPreferredSize().height;
         int TILEHEIGHT = tiles.get("Grass").getHeight();
@@ -216,4 +216,6 @@ public class GameView extends View implements Runnable {
             gameController.addObj(new TileObject(x, y, tiles));
         }
     }
+
+    public Canvas getGameCanvas() { return this.gameCanvas; }
 }

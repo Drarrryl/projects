@@ -2,14 +2,18 @@ package entity.Game;
 
 import java.awt.*;
 
-public class GameObject implements GameObjectInterface {
+public abstract class GameObject implements GameObjectInterface {
 
     private double x;
     private double y;
+    private int width;
+    private int height;
 
-    public GameObject(double x, double y) {
+    public GameObject(double x, double y, int width, int height) {
         this.x = x;
         this.y = y;
+        this.width = width;
+        this.height = height;
     }
 
     public double getX() {
@@ -28,6 +32,23 @@ public class GameObject implements GameObjectInterface {
         this.y = y;
     }
 
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
     @Override
     public void tick(Canvas gameCanvas) {
 
@@ -36,5 +57,9 @@ public class GameObject implements GameObjectInterface {
     @Override
     public void render(Graphics g) {
 
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle((int) x, (int) y, width, height);
     }
 }
