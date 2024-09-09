@@ -213,7 +213,7 @@ public class GameView extends View implements Runnable {
 
         for (int i = 0; i < numTiles; i++) {
             double x = (TILEWIDTH * i);
-            gameController.addObj(new TileObject(x, y, tiles));
+            gameController.addObj(new TileObject(x, y, tiles, false));
         }
     }
 

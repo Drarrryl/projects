@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class GameController {
 
@@ -103,7 +104,9 @@ public class GameController {
                     TileObject tailTile = findTailTile();
                     double x = tailTile.getX() + tailTile.getWidth();
                     double y = tailTile.getY();
-                    addObj(new TileObject(x, y, tileSprites));
+                    Random r = new Random();
+
+                    addObj(new TileObject(x, y, tileSprites, r.nextBoolean()));
                 }
             }
         }
