@@ -85,7 +85,8 @@ public class DataAccess implements DataAccessInterface{
             data.get("USER_" + user.getUsername()).getAsJsonObject();
 
         } catch(Exception e) {
-            String strUserData = "{\"password\":" + user.getPassword() + "}";
+            String strUserData = "{\"password\":" + user.getPassword() + ","
+                                    + "\"highscore\":" + user.getHighscore() + "}";
 
             JsonElement userData = JsonParser.parseString(strUserData).getAsJsonObject();
             data.add("USER_" + user.getUsername(), userData);
@@ -133,6 +134,36 @@ public class DataAccess implements DataAccessInterface{
         try {
             data.remove("USER_" + username);
             SaveData();
+
+        } catch(Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    @Override
+    public long readHighscore(String username) {
+        LoadData();
+
+        //checks for existence
+        try {
+            JsonObject userData = data.get("USER_" + username).getAsJsonObject();
+            long highscore = userData.get("highscore").getAsLong();
+
+            return highscore;
+
+        } catch(Exception e) {
+            return 0;
+        }
+    }
+
+    @Override
+    public void updateHighscore(User user, long newScore) throws RuntimeException {
+        LoadData();
+
+        try {
+            data.remove("USER_" + user.getUsername());
+            user.setHighscore(newScore);
+            createUser(user);  // contains SaveData()
 
         } catch(Exception e) {
             throw new RuntimeException();

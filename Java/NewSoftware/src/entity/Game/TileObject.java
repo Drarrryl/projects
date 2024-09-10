@@ -55,4 +55,8 @@ public class TileObject extends GameObject implements Collidable {
             delete = true;
         }
     }
+
+    public Obstacle getObstacle() {
+        return obstacle;
+    }
 }

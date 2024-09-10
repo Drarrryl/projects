@@ -14,7 +14,7 @@ public interface DataAccessInterface  {
 
     /**
      * Precondition: username does not already exist in the Database (is unique)
-     * @exception RuntimeException if there is already a user or a datbase error.
+     * @exception RuntimeException if there is already a user or a database error.
      */
     void createUser(User user) throws RuntimeException;
 
@@ -24,15 +24,27 @@ public interface DataAccessInterface  {
     User readUser(String username);
 
     /**
-     * Precondition: username already exist in the Database
-     * @exception RuntimeException if there isn't a user or a datbase error.
+     * Precondition: user already exist in the Database
+     * @exception RuntimeException if there isn't a user or a database error.
      */
     void updateUser(User user) throws RuntimeException;
 
     /**
      * Precondition: username already exist in the Database
-     * @exception RuntimeException if there isn't a user or a datbase error.
+     * @exception RuntimeException if there isn't a user or a database error.
      */
     void deleteUser(String username) throws RuntimeException;
+
+    /**
+     * Precondition: username already exist in the Database
+     * @exception RuntimeException if there isn't a user or a database error.
+     */
+    long readHighscore(String username);
+
+    /**
+     * Precondition: username already exist in the Database
+     * @exception RuntimeException if there isn't a user or a database error.
+     */
+    void updateHighscore(User user, long newScore) throws RuntimeException;
 
 }

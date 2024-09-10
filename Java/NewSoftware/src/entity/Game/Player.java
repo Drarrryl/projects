@@ -15,6 +15,8 @@ public class Player extends GameObject implements NonCollidable {
     private double velX = 0;
     private double velY = 0;
 
+    public double speed;
+
     public boolean grounded;
 
     private BufferedImage idle;
@@ -31,6 +33,8 @@ public class Player extends GameObject implements NonCollidable {
 
     public Player(double x, double y, HashMap<String, BufferedImage> playerSprites) {
         super(x, y, playerSprites.get("Idle").getWidth(), playerSprites.get("Idle").getHeight());
+
+        speed = 5;
 
         idle = playerSprites.get("Idle");
         jump1 = playerSprites.get("Jump 1");
@@ -79,12 +83,19 @@ public class Player extends GameObject implements NonCollidable {
 
     public void gravity() {
         if (!grounded) {
-            setY(getY() + 2);
+            setVelY(velY + 0.5);
         }
     }
 
     public void checkGround(ArrayList<Collidable> collidables) {
-        grounded = Physics.Collision(this, collidables) != null;
+        ArrayList<Collidable> tiles = new ArrayList<>();
+
+        for (int i = 0; i < collidables.size(); i++) {
+            if (collidables.get(i) instanceof TileObject) {
+                tiles.add(collidables.get(i));
+            }
+        }
+        grounded = Physics.Collision(this, tiles) != null;
     }
 
     public void resetPos(Canvas canvas, ArrayList<Collidable> collidables) {
@@ -94,7 +105,7 @@ public class Player extends GameObject implements NonCollidable {
         GameObject ground = Physics.Collision(this, collidables);
 
         if (ground != null) {
-            yOffset = (int) ground.getY() - this.idle.getHeight();
+            yOffset = ((int) ground.getY() - this.idle.getHeight()) + 5;
         }
 
         if (getX() < 0) setX(0);
@@ -106,7 +117,7 @@ public class Player extends GameObject implements NonCollidable {
 
     public void jump() {
         if (!jump1State && !jump2State) {
-            jumpTimer = 10;
+            jumpTimer = 6;
         }
     }
 
@@ -135,7 +146,7 @@ public class Player extends GameObject implements NonCollidable {
             jump1State = false;
             jump2State = false;
             isJumping = true;
-        } else if (jumpTimer < 5) {
+        } else if (jumpTimer < 3) {
             jump2State = true;
             jump1State = false;
         } else {

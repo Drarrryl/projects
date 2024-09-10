@@ -9,6 +9,7 @@ public class GameViewModel extends ViewModel {
     private User loggedInUser;
 
     public String TITLE = "Placeholder Game";
+    public String START_GAME_BUTTON = "Start Game";
     public String EXIT_GAME_BUTTON = "Exit Game";
 
     public GameViewModel(ViewManager viewManager)

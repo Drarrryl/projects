@@ -30,6 +30,8 @@ public class UserInteractor implements UserInputBoundary {
     public void start(UserInputData inputData) {
         User user = inputData.getUser();
 
+        user.setHighscore(userDataAccessObject.readHighscore(user.getUsername()));
+
         UserOutputData outputData = new UserOutputData(user);
 
         userPresenter.prepareStartView(outputData);
