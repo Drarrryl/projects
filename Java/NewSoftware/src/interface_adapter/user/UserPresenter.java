@@ -25,7 +25,7 @@ public class UserPresenter implements UserOutputBoundary
         viewManager.switchToView(gameViewModel.getName());
         viewManager.setResolution(gameViewModel.DEFAULT_SIZE);
         gameViewModel.setLoggedInUser(user.getUser());
-        gameViewModel.getState().setUsername(user.getUser().getUsername());
+        gameViewModel.getState().setUser(user.getUser());
         gameViewModel.getState().setStatus(true);
     }
 

@@ -1,5 +1,7 @@
 package entity.Game;
 
+import interface_adapter.Game.GameController;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -8,23 +10,28 @@ import java.util.Random;
 
 public class TileObject extends GameObject implements Collidable {
 
-    private double velX = -2.0;
+    private double velX = -3.0;
 
     private final BufferedImage tile;
-    private Obstacle obstacle;
-    private ArrayList<BufferedImage> obstacles = new ArrayList<>();
+    private final Obstacle obstacle;
 
     public boolean delete = false;
-    public TileObject(double x, double y, HashMap<String, BufferedImage> tileSprites, boolean hasObstacle) {
+    public TileObject(double x, double y, HashMap<String, BufferedImage> tileSprites, String obstacle) {
         super(x, y, tileSprites.get("Grass").getWidth(), tileSprites.get("Grass").getHeight());
 
         tile = tileSprites.get("Grass");
-        obstacles.add(tileSprites.get("Spikes"));
 
-        if (hasObstacle) {
-            obstacle = new Obstacle(x, y - obstacles.get(0).getHeight(), obstacles.get(0));
+        if (obstacle.equals("Spikes")) {
+            BufferedImage[] obst = new BufferedImage[]{tileSprites.get(obstacle)};
+            this.obstacle = new Obstacle(x, y - obst[0].getHeight(), obst, obstacle);
+        } else if (obstacle.equals("Enemy")) {
+            BufferedImage[] obst = new BufferedImage[3];
+            obst[0] = tileSprites.get("Enemy");
+            obst[1] = tileSprites.get("EnemyJump1");
+            obst[2] = tileSprites.get("EnemyJump2");
+            this.obstacle = new Obstacle(x, y - obst[0].getHeight(), obst, obstacle);
         } else {
-            obstacle = null;
+            this.obstacle = null;
         }
 
 
@@ -35,9 +42,13 @@ public class TileObject extends GameObject implements Collidable {
     }
 
     @Override
-    public void tick(Canvas gameCanvas) {
+    public void tick(Canvas gameCanvas, GameController controller) {
         setX(getX() + velX);
-        if (obstacle != null) obstacle.setX((getX() + velX));
+        if (obstacle != null) {
+            obstacle.setX((getX() + velX));
+            obstacle.tick(gameCanvas, controller);
+        }
+
 
         checkTilePos();
     }

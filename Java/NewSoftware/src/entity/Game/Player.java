@@ -26,10 +26,11 @@ public class Player extends GameObject implements NonCollidable {
     private boolean jump2State;
 
     private int jumpTimer = -1;
-    private float jumpAccel = 2.0f;
-    private float jumpInitVel = 20.0f;
+    private float jumpAccel = 1.0f;
+    private float jumpInitVel = 15.0f;
     private float jumpVel;
     private boolean isJumping;
+    private boolean canJump = true;
 
     public Player(double x, double y, HashMap<String, BufferedImage> playerSprites) {
         super(x, y, playerSprites.get("Idle").getWidth(), playerSprites.get("Idle").getHeight());
@@ -116,8 +117,9 @@ public class Player extends GameObject implements NonCollidable {
     }
 
     public void jump() {
-        if (!jump1State && !jump2State) {
-            jumpTimer = 6;
+        if (!jump1State && !jump2State && canJump) {
+            canJump = false;
+            jumpTimer = 4;
         }
     }
 
@@ -146,12 +148,16 @@ public class Player extends GameObject implements NonCollidable {
             jump1State = false;
             jump2State = false;
             isJumping = true;
-        } else if (jumpTimer < 3) {
+        } else if (jumpTimer < 2) {
             jump2State = true;
             jump1State = false;
         } else {
             jump1State = true;
             jump2State = false;
         }
+    }
+
+    public void canJump() {
+        canJump = true;
     }
 }

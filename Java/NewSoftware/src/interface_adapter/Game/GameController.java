@@ -21,6 +21,9 @@ import java.util.Random;
 
 public class GameController {
 
+    private boolean a_pressed = false;
+    private boolean d_pressed = false;
+
     private ArrayList<Collidable> collidableObjs = new ArrayList<>();
     private ArrayList<NonCollidable> nonCollidableObjs = new ArrayList<>();
     private final GameInputBoundary gameInteractor;
@@ -31,29 +34,32 @@ public class GameController {
     }
 
     public void keyPressed(int keyCode, Player plr) {
-        if (keyCode == KeyEvent.VK_W) {
-            System.out.println(plr.grounded);
+        if (keyCode == KeyEvent.VK_W || keyCode == KeyEvent.VK_UP) {
             if (plr.grounded) plr.jump();
         }
-        if (keyCode == KeyEvent.VK_S) {
+        if (keyCode == KeyEvent.VK_S || keyCode == KeyEvent.VK_DOWN) {
             if (!plr.grounded) plr.setVelY(5);
         }
-        if (keyCode == KeyEvent.VK_A) {
+        if (keyCode == KeyEvent.VK_A || keyCode == KeyEvent.VK_LEFT) {
+            a_pressed = true;
             plr.setVelX(-plr.speed);
         }
-        if (keyCode == KeyEvent.VK_D) {
+        if (keyCode == KeyEvent.VK_D || keyCode == KeyEvent.VK_RIGHT) {
+            d_pressed = true;
             plr.setVelX(plr.speed);
         }
     }
 
     public void keyReleased(int keyCode, Player plr) {
-        if (keyCode == KeyEvent.VK_S) {
-            plr.setVelY(0);
+        if (keyCode == KeyEvent.VK_W || keyCode == KeyEvent.VK_UP) {
+            plr.canJump();
         }
-        if (keyCode == KeyEvent.VK_A) {
-            plr.setVelX(0);
-        } else if (keyCode == KeyEvent.VK_D) {
-            plr.setVelX(0);
+        if (keyCode == KeyEvent.VK_A || keyCode == KeyEvent.VK_LEFT) {
+            a_pressed = false;
+            if (!d_pressed) plr.setVelX(0);
+        } else if (keyCode == KeyEvent.VK_D || keyCode == KeyEvent.VK_RIGHT) {
+            d_pressed = false;
+            if (!a_pressed) plr.setVelX(0);
         }
     }
 
@@ -73,16 +79,16 @@ public class GameController {
         nonCollidableObjs.remove(obj);
     }
 
-    public void tick(Canvas gameCanvas, HashMap<String, BufferedImage> tileSprites, long score) {
+    public void tick(Canvas gameCanvas, GameState gameState) {
         for (Collidable obj : collidableObjs) {
-            obj.tick(gameCanvas);
+            obj.tick(gameCanvas, this);
         }
 
         for (NonCollidable obj : nonCollidableObjs) {
             obj.tick(gameCanvas, this);
         }
 
-        updateTile(tileSprites, score);
+        updateTile(gameState);
     }
 
     public void render(Graphics g) {
@@ -108,7 +114,9 @@ public class GameController {
         this.nonCollidableObjs = new ArrayList<NonCollidable>();
     }
 
-    public void updateTile(HashMap<String, BufferedImage> tileSprites, long score) {
+    public void updateTile(GameState gameState) {
+        long score = gameState.getScore();
+        HashMap<String, BufferedImage> tileSprites = gameState.getTileSprites();
         for (int i = 0; i < collidableObjs.size(); i++) {
             Collidable currObj = collidableObjs.get(i);
 
@@ -119,10 +127,10 @@ public class GameController {
                     double x = tailTile.getX() + tailTile.getWidth();
                     double y = tailTile.getY();
                     Random r = new Random();
-                    boolean[] choices1 = {true, false, false, false, false};
-                    boolean[] choices2 = {true, true, false, false, false};
-                    boolean[] choices3 = {true, true, true, false, false};
-                    boolean[] choices4 = {true, true, true, true, false};
+                    String[] choices1 = {"Spikes", "", "", "", ""};
+                    String[] choices2 = {"Spikes", "Enemy", "", "", ""};
+                    String[] choices3 = {"Spikes", "Enemy", "Spikes", "", ""};
+                    String[] choices4 = {"Enemy", "Spikes", "Enemy", "Spikes", ""};
 
                     TileObject newTile;
 
@@ -138,7 +146,7 @@ public class GameController {
                     }
 
                     if (overrideObstacle) {
-                        newTile = new TileObject(x, y, tileSprites, false);
+                        newTile = new TileObject(x, y, tileSprites, "");
                     } else if (score < 1000) {
                         newTile = new TileObject(x, y, tileSprites, choices1[r.nextInt(0, 5)]);
                     } else if (score < 2000) {
@@ -158,13 +166,13 @@ public class GameController {
         }
     }
 
-    public void updatePlr(Player plr, String[] phase) {
+    public void updatePlr(Player plr, GameState gameState) {
         ArrayList<GameObject> objs = Physics.Collisions(plr, collidableObjs);
 
         if (!objs.isEmpty()) {
             for (GameObject gameObj : objs) {
                 if (gameObj instanceof Obstacle) {
-                    phase[0] = "pause";
+                    gameState.setPhase("pause");
                 }
             }
         }
@@ -219,6 +227,11 @@ public class GameController {
         result[2] = obj3;
 
         return result;
+    }
+
+    public void saveScore(long score, User user) {
+        GameOutputData data = new GameOutputData(score, user);
+        gameInteractor.save(data);
     }
 
     public void exitGame(long score, User user) {

@@ -3,6 +3,7 @@ package view.Game;
 import entity.Game.Player;
 import entity.Game.TileObject;
 import interface_adapter.Game.GameController;
+import interface_adapter.Game.GameState;
 import interface_adapter.Game.GameViewModel;
 import interface_adapter.Game.KeyInput;
 import view.View;
@@ -16,39 +17,36 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.HashMap;
 
 public class GameView extends View implements Runnable {
 
     private GameController gameController;
+    private GameState gameState;
 
     private Canvas gameCanvas;
 
-    private BufferedImage bgImage;
-
-    HashMap<String, BufferedImage> playerSprites = new HashMap<>();
-    private HashMap<String, BufferedImage> tileSprites;
-
     private Player plr;
 
-    private long score;
+    private final JLabel scoreLabel;
 
-    private JLabel scoreLabel;
+    private final JPanel buttonPanel;
 
-    private JPanel buttonPanel;
+    private final JButton startButton;
 
-    private JButton startButton;
+    private final JButton playAgainButton;
 
-    private JButton exitGameButton;
+    private final JButton exitGameButton;
 
     private boolean running = false;
     private Thread thread;
-    private String[] phase;
 
     public GameView(GameViewModel viewModel, GameController gameController) {
         super(viewModel);
         this.gameController = gameController;
+        this.gameState = viewModel.getState();
 
         float scale = 0.8f;
         final int WIDTH = (int) (viewModel.DEFAULT_SIZE.width * scale);
@@ -62,8 +60,9 @@ public class GameView extends View implements Runnable {
 
         BufferedImageLoader loader = new BufferedImageLoader();
 
-
-        tileSprites = new HashMap<>();
+        BufferedImage bgImage = null;
+        HashMap<String, BufferedImage> tileSprites = new HashMap<>();
+        HashMap<String, BufferedImage> playerSprites = new HashMap<>();
 
         try {
             bgImage = loader.loadImage("/images/bg.png");
@@ -74,28 +73,41 @@ public class GameView extends View implements Runnable {
 
             tileSprites.put("Grass", loader.loadImage("/images/grass.png"));
             tileSprites.put("Spikes", loader.loadImage("/images/spikes.png"));
+            tileSprites.put("Enemy", loader.loadImage("/images/enemy_idle.png"));
+            tileSprites.put("EnemyJump1", loader.loadImage("/images/enemy_jump1.png"));
+            tileSprites.put("EnemyJump2", loader.loadImage("/images/enemy_jump2.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        gameState.setBgImage(bgImage);
+        gameState.setPlayerSprites(playerSprites);
+        gameState.setTileSprites(tileSprites);
+
         plr = new Player(200, 200, playerSprites);
 
-        score = 0;
-        scoreLabel = new JLabel("Score: " + String.valueOf(score));
+        gameState.setScore(0);
+        scoreLabel = new JLabel("Score: " + String.valueOf(gameState.getScore()));
+        scoreLabel.setHorizontalTextPosition(SwingConstants.LEFT);
 
         viewModel.getViewManager().getApplicationFrame().setTitle(viewModel.TITLE);
 
         buttonPanel = new JPanel();
-        startButton = new JButton(viewModel.START_GAME_BUTTON);
-        exitGameButton = new JButton(viewModel.EXIT_GAME_BUTTON);
+        startButton = new JButton(viewModel.START_GAME_BUTTON_STRING);
+        playAgainButton = new JButton(viewModel.PLAY_AGAIN_BUTTON_STRING);
+        exitGameButton = new JButton(viewModel.EXIT_GAME_BUTTON_STRING);
         buttonPanel.add(startButton);
+        buttonPanel.add(playAgainButton);
         buttonPanel.add(exitGameButton);
+        viewModel.SetTheme(buttonPanel, viewModel.getViewManager().getTheme());
+        buttonPanel.remove(playAgainButton);
+        buttonPanel.updateUI();
 
         exitGameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 stop();
-                viewModel.getState().setStatus(false);
+                gameState.setStatus(false);
             }
         });
 
@@ -106,7 +118,23 @@ public class GameView extends View implements Runnable {
             }
         });
 
-        viewModel.getState().addPropertyChangeListener(
+        playAgainButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gameState.setPhase("restart");
+
+                gameController.saveScore(gameState.getScore(), viewModel.getLoggedInUser());
+
+                buttonPanel.remove(playAgainButton);
+                buttonPanel.updateUI();
+
+                stop();
+                init();
+                start();
+            }
+        });
+
+        gameState.addPropertyChangeListener(
                 new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
@@ -118,7 +146,18 @@ public class GameView extends View implements Runnable {
                     }
         });
 
-        phase = new String[1];
+        gameState.addPropertyChangeListener(
+                new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (evt.getPropertyName().equals("phase")) {
+                            if (evt.getNewValue().equals("pause")) {
+                                pause();
+                            }
+                        }
+                    }
+                }
+        );
 
         this.add(scoreLabel);
         this.add(gameCanvas);
@@ -128,38 +167,38 @@ public class GameView extends View implements Runnable {
         viewModel.SetTheme(this, viewModel.getViewManager().getTheme());
     }
 
-    private void init() {
+    private synchronized void init() {
         if (running) {
             return;
         }
 
         running = true;
 
-        phase[0] = "init";
+        gameState.setPhase("init");
 
-        score = 0;
+        gameState.setScore(0);
         if (((GameViewModel) getViewModel()).getLoggedInUser() != null) {
-            scoreLabel.setText("Score: " + String.valueOf(score) + " Highscore: " + ((GameViewModel) getViewModel()).getLoggedInUser().getHighscore());
+            scoreLabel.setText("Score: " + String.valueOf(gameState.getScore()) + " Highscore: " + ((GameViewModel) getViewModel()).getLoggedInUser().getHighscore());
         }
 
-        plr = new Player(200, 200, playerSprites);
+        plr = new Player(200, 200, gameState.getPlayerSprites());
         plr.setX(200);
-        plr.setY(gameCanvas.getHeight()-plr.getHeight()-tileSprites.get("Grass").getHeight()+5);
+        plr.setY(gameCanvas.getHeight()-plr.getHeight()-gameState.getTileSprites().get("Grass").getHeight()+5);
         plr.setVelX(0);
         plr.setVelY(0);
 
         gameController.addObj(plr);
 
-        generateTiles(tileSprites);
+        generateTiles(gameState.getTileSprites());
 
         thread = new Thread(this);
         thread.start();
     }
 
     private synchronized void start() {
-        phase[0] = "start";
+        gameState.setPhase("start");
 
-        score = 0;
+        gameState.setScore(0);
 
         buttonPanel.remove(startButton);
         buttonPanel.updateUI();
@@ -168,12 +207,17 @@ public class GameView extends View implements Runnable {
         gameCanvas.update(gameCanvas.getGraphics());
     }
 
+    private synchronized void pause() {
+        buttonPanel.add(playAgainButton, 0);
+        buttonPanel.updateUI();
+    }
+
     private synchronized void stop() {
         if (!running) {
             return;
         }
 
-        phase[0] = "stop";
+        //phase[0] = "stop";
 
         buttonPanel.add(startButton, 0);
 
@@ -189,11 +233,11 @@ public class GameView extends View implements Runnable {
     }
 
     private void tick() {
-        if (phase[0].equals("start")) {
-            gameController.tick(gameCanvas, tileSprites, score);
-            gameController.updatePlr(plr, phase);
-            score += 1;
-            scoreLabel.setText("Score: " + String.valueOf(score) + " Highscore: " + ((GameViewModel) getViewModel()).getLoggedInUser().getHighscore());
+        if (gameState.getPhase().equals("start")) {
+            gameController.tick(gameCanvas, gameState);
+            gameController.updatePlr(plr, gameState);
+            gameState.setScore(gameState.getScore()+1);
+            scoreLabel.setText("Score: " + String.valueOf(gameState.getScore()) + " Highscore: " + ((GameViewModel) getViewModel()).getLoggedInUser().getHighscore());
         }
     }
 
@@ -208,7 +252,7 @@ public class GameView extends View implements Runnable {
         Graphics g = bs.getDrawGraphics();
         //////////////////////////////////
 
-        g.drawImage(bgImage, 0, 0, gameCanvas.getWidth(), gameCanvas.getHeight(), gameCanvas);
+        g.drawImage(gameState.getBgImage(), 0, 0, gameCanvas.getWidth(), gameCanvas.getHeight(), gameCanvas);
 
         gameController.render(g);
 
@@ -257,7 +301,7 @@ public class GameView extends View implements Runnable {
                 frames = 0;
             }
         }
-        gameController.exitGame(score, ((GameViewModel) getViewModel()).getLoggedInUser());
+        if (!gameState.getPhase().equals("restart")) gameController.exitGame(gameState.getScore(), ((GameViewModel) getViewModel()).getLoggedInUser());
     }
 
     public void generateTiles(HashMap<String, BufferedImage> tiles) {
@@ -272,7 +316,7 @@ public class GameView extends View implements Runnable {
 
         for (int i = 0; i < numTiles; i++) {
             double x = (TILEWIDTH * i);
-            gameController.addObj(new TileObject(x, y, tiles, false));
+            gameController.addObj(new TileObject(x, y, tiles, ""));
         }
     }
 
