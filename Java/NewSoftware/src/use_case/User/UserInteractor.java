@@ -41,4 +41,13 @@ public class UserInteractor implements UserInputBoundary {
     public void mainMenu() {
         userPresenter.prepareMainMenuView();
     }
+
+    @Override
+    public void profile(UserInputData inputData) {
+        User user = inputData.getUser();
+
+        UserOutputData outputData = new UserOutputData(user);
+
+        userPresenter.prepareProfileView(outputData);
+    }
 }

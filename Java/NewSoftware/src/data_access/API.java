@@ -1,22 +1,15 @@
 package data_access;
 
-import java.io.FileInputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Scanner;
-
 import com.google.cloud.storage.*;
 
 import java.nio.file.Paths;
 
-import com.google.gson.*;
-
-public class API implements APIInterface{
+public class API implements APIInterface {
 
     public static void main(String[] args) {
         API api = new API();
 
-        api.download("./data.json", "data.json");
+        api.download("./src/data_access/data.json", "data.json");
     }
 
     @Override

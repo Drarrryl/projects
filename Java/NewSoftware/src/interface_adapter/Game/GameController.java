@@ -4,6 +4,7 @@ import entity.Game.*;
 import entity.User;
 import org.checkerframework.checker.units.qual.A;
 import use_case.Game.GameInputBoundary;
+import use_case.Game.GameInputData;
 import use_case.Game.GameOutputBoundary;
 import use_case.Game.GameOutputData;
 import use_case.User.UserInputBoundary;
@@ -230,12 +231,12 @@ public class GameController {
     }
 
     public void saveScore(long score, User user) {
-        GameOutputData data = new GameOutputData(score, user);
+        GameInputData data = new GameInputData(score, user);
         gameInteractor.save(data);
     }
 
     public void exitGame(long score, User user) {
-        GameOutputData data = new GameOutputData(score, user);
+        GameInputData data = new GameInputData(score, user);
         gameInteractor.saveAndQuit(data);
     }
 }

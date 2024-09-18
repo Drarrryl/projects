@@ -20,7 +20,7 @@ public class MainMenuViewModel extends ViewModel {
 
     private OptionsViewModel optionsViewModel;
 
-    private MainMenuState mainMenuState;
+    private MainMenuState state = new MainMenuState();
 
     private User loggedInUser;
 
@@ -29,7 +29,6 @@ public class MainMenuViewModel extends ViewModel {
         super("Main Menu", viewManager);
         this.userViewModel = userViewModel;
         this.optionsViewModel = optionsViewModel;
-        this.mainMenuState = new MainMenuState();
         this.loggedInUser = null;
     }
 
@@ -43,12 +42,12 @@ public class MainMenuViewModel extends ViewModel {
 
     public MainMenuState getState()
     {
-        return mainMenuState;
+        return state;
     }
 
     public void setState(MainMenuState state)
     {
-        this.mainMenuState = state;
+        this.state = state;
     }
 
     public User getLoggedInUser() { return loggedInUser; }

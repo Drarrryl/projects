@@ -1,5 +1,6 @@
 package interface_adapter.Game;
 
+import interface_adapter.user.UserViewModel;
 import use_case.Game.GameOutputBoundary;
 import use_case.Game.GameOutputData;
 import use_case.User.UserOutputBoundary;
@@ -28,8 +29,12 @@ public class GamePresenter implements GameOutputBoundary
     }
 
     @Override
-    public void prepareSaveAndQuit() {
+    public void prepareSaveAndQuit(GameOutputData outputData) {
+        UserViewModel viewModel = (UserViewModel) viewManager.getLastViewModel();
         viewManager.switchToLastView();
-        viewManager.setResolution(viewManager.getLastViewModel().DEFAULT_SIZE);
+        viewManager.setResolution(viewModel.DEFAULT_SIZE);
+        viewModel.getState().setUsername(outputData.getUser().getUsername());
+        viewModel.getState().setHighscore(outputData.getUser().getHighscore());
+        viewModel.getState().setPfpStatus(true);
     }
 }

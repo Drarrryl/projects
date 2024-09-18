@@ -1,6 +1,12 @@
 package interface_adapter.Login;
 
-public class LoginState {
+import interface_adapter.State;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
+public class LoginState implements State {
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     String username = "";
     String password = "";
@@ -12,6 +18,11 @@ public class LoginState {
     public String getUsername()
     {
         return username;
+    }
+
+    @Override
+    public long getHighscore() {
+        return 0;
     }
 
     public String getPassword()
@@ -47,6 +58,14 @@ public class LoginState {
     public void setPasswordError(String passwordError)
     {
         this.passwordError = passwordError;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        this.pcs.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        this.pcs.removePropertyChangeListener(listener);
     }
 
 }

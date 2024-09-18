@@ -210,6 +210,7 @@ public class GameView extends View implements Runnable {
     private synchronized void pause() {
         buttonPanel.add(playAgainButton, 0);
         buttonPanel.updateUI();
+        getViewModel().SetTheme(buttonPanel, getViewModel().getViewManager().getTheme());
     }
 
     private synchronized void stop() {

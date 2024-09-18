@@ -23,14 +23,13 @@ public class LoginViewModel extends ViewModel {
 
     private MainMenuViewModel mainMenuViewModel;
 
-    private LoginState loginState;
+    private LoginState state = new LoginState();
 
     public LoginViewModel(ViewManager viewManager, SignupViewModel signupViewModel, MainMenuViewModel mainMenuViewModel)
     {
         super("Login", viewManager);
         this.signupViewModel = signupViewModel;
         this.mainMenuViewModel = mainMenuViewModel;
-        this.loginState = new LoginState();
         this.bg_color = BACKGROUND_COLOR;
         this.txt_color = TEXT_COLOR;
         this.DEFAULT_SIZE = new Dimension(WINDOW_DEFAULT_SIZE.width/4, WINDOW_DEFAULT_SIZE.height/4);
@@ -58,11 +57,11 @@ public class LoginViewModel extends ViewModel {
 
     public LoginState getState()
     {
-        return loginState;
+        return state;
     }
 
     public void setState(LoginState state)
     {
-        this.loginState = state;
+        this.state = state;
     }
 }

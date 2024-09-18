@@ -13,24 +13,24 @@ public class OptionsViewModel extends ViewModel {
     public static final String BACK_BUTTON_STRING = "Back";
     public static final String RESET_TO_DEFAULT_BUTTON_STRING = "Reset to Default";
 
-    private OptionsState optionsState;
+    private OptionsState state;
 
     private User loggedInUser;
 
     public OptionsViewModel(ViewManager viewManager)
     {
         super("Options", viewManager);
-        this.optionsState = new OptionsState(this.DEFAULT_SIZE);
+        this.state = new OptionsState(DEFAULT_SIZE);
         this.loggedInUser = null;
     }
     public OptionsState getState()
     {
-        return optionsState;
+        return state;
     }
 
     public void setState(OptionsState state)
     {
-        this.optionsState = state;
+        this.state = state;
     }
 
     public User getLoggedInUser() { return loggedInUser; }

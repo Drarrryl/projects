@@ -4,10 +4,12 @@ import entity.User;
 
 public class MainMenuOutputData {
     private final String username;
+    private final long highscore;
     private final User user;
 
-    public MainMenuOutputData(String username, User user) {
+    public MainMenuOutputData(String username, long highscore, User user) {
         this.username = username;
+        this.highscore = highscore;
         this.user = user;
     }
 
@@ -16,4 +18,8 @@ public class MainMenuOutputData {
     }
 
     public User getUser() { return user; }
+
+    public long getHighscore() {
+        return highscore;
+    }
 }

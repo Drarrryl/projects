@@ -2,6 +2,8 @@ package interface_adapter.user;
 
 import interface_adapter.Game.GameViewModel;
 import interface_adapter.MainMenu.MainMenuViewModel;
+import interface_adapter.Profile.ProfileState;
+import interface_adapter.Profile.ProfileViewModel;
 import use_case.User.UserOutputBoundary;
 import use_case.User.UserOutputData;
 import view.ViewManager;
@@ -28,6 +30,16 @@ public class UserPresenter implements UserOutputBoundary
         gameViewModel.getState().setUser(user.getUser());
         gameViewModel.getState().setStatus(true);
     }
+
+    @Override
+    public void prepareProfileView(UserOutputData user) {
+        ProfileViewModel profileViewModel = userViewModel.getProfileViewModel();
+        viewManager.switchToView(profileViewModel.getName());
+        viewManager.setResolution(profileViewModel.DEFAULT_SIZE);
+        ProfileState state = profileViewModel.getProfileState();
+        state.setLoggedInUser(user.getUser());
+    }
+
 
     @Override
     public void prepareMainMenuView() {

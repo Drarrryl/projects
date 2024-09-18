@@ -1,6 +1,12 @@
 package interface_adapter.Signup;
 
-public class SignupState {
+import interface_adapter.State;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
+public class SignupState implements State {
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     String username = "";
     String password = "";
@@ -17,6 +23,11 @@ public class SignupState {
     public String getUsername()
     {
         return username;
+    }
+
+    @Override
+    public long getHighscore() {
+        return 0;
     }
 
     public String getPassword()
@@ -72,6 +83,14 @@ public class SignupState {
     public void setCreationTime(String time)
     {
         creationTime = time;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        this.pcs.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        this.pcs.removePropertyChangeListener(listener);
     }
 
 }

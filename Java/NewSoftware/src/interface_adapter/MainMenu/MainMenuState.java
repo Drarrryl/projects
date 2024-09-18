@@ -1,10 +1,11 @@
 package interface_adapter.MainMenu;
 
-import java.beans.PropertyChangeEvent;
+import interface_adapter.State;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-public class MainMenuState {
+public class MainMenuState implements State {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     String buttonName = "";
     String username = "";
@@ -18,6 +19,11 @@ public class MainMenuState {
     public String getUsername()
     {
         return username;
+    }
+
+    @Override
+    public long getHighscore() {
+        return 0;
     }
 
     public void setUsername(String newUsername)

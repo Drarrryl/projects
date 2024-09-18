@@ -26,6 +26,7 @@ public class SignupView extends View {
     public SignupView(SignupViewModel signupViewModel, SignupController signupController)
     {
         super(signupViewModel);
+        this.signupViewModel = signupViewModel;
         this.signupController = signupController;
 
         backButton = new JButton(SignupViewModel.BACK_BUTTON_STRING);
@@ -62,10 +63,7 @@ public class SignupView extends View {
                 new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        String username = signupViewModel.getState().getUsername();
-                        String password = signupViewModel.getState().getPassword();
-                        String repeatPassword = signupViewModel.getState().getRepeatPassword();
-                        signupController.execute(username, password, repeatPassword);
+                        execute();
                     }
                 }
         );
@@ -114,6 +112,9 @@ public class SignupView extends View {
 
                     @Override
                     public void keyPressed(KeyEvent e) {
+                        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                            execute();
+                        }
                     }
 
                     @Override
@@ -127,5 +128,12 @@ public class SignupView extends View {
         this.add(buttonPanel);
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         signupViewModel.SetTheme(this, "Default");
+    }
+
+    public void execute() {
+        String username = signupViewModel.getState().getUsername();
+        String password = signupViewModel.getState().getPassword();
+        String repeatPassword = signupViewModel.getState().getRepeatPassword();
+        signupController.execute(username, password, repeatPassword);
     }
 }

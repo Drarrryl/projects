@@ -13,17 +13,22 @@ public class GameInteractor implements GameInputBoundary {
         this.gamePresenter = gameOutputBoundary;
     }
 
-    public void save(GameOutputData outputData) {
-        long score = outputData.getScore();
-        User user = outputData.getUser();
+    public void save(GameInputData inputData) {
+        long score = inputData.getScore();
+        User user = inputData.getUser();
 
         if (score > user.getHighscore()) {
             gameDataAccessObject.updateHighscore(user, score);
         }
     }
 
-    public void saveAndQuit(GameOutputData outputData) {
-        save(outputData);
-        gamePresenter.prepareSaveAndQuit();
+    public void saveAndQuit(GameInputData inputData) {
+        save(inputData);
+
+        long score = inputData.getScore();
+        User user = inputData.getUser();
+
+        GameOutputData outputData = new GameOutputData(score, user);
+        gamePresenter.prepareSaveAndQuit(outputData);
     }
 }

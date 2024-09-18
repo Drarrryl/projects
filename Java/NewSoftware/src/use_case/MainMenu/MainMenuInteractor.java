@@ -17,9 +17,10 @@ public class MainMenuInteractor implements MainMenuInputBoundary {
     public void execute(MainMenuInputData mainMenuInputData) {
         String buttonName = mainMenuInputData.getButtonName();
         String username = mainMenuInputData.getUsername();
+        long score = userDataAccessObject.readHighscore(username);
         User user = userDataAccessObject.readUser(username);
 
-        MainMenuOutputData data = new MainMenuOutputData(username, user);
+        MainMenuOutputData data = new MainMenuOutputData(username, score, user);
 
         if (buttonName.equals("Start")) {
             mainMenuPresenter.prepareSuccessView(data);

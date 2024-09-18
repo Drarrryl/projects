@@ -24,4 +24,10 @@ public class UserController {
     public void mainMenu() {
         userInteractor.mainMenu();
     }
+
+    public void profile(User user) {
+        UserInputData inputData = new UserInputData(user);
+
+        userInteractor.profile(inputData);
+    }
 }

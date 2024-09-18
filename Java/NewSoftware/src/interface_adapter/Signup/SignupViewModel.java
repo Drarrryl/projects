@@ -13,22 +13,23 @@ public class SignupViewModel extends ViewModel {
     public static final String PASSWORD_FIELD_STRING1 = "Password: ";
     public static final String PASSWORD_FIELD_STRING2 = "Confirm Password: ";
 
-    private SignupState signupState = new SignupState();
+    private SignupState state;
 
     public SignupViewModel(ViewManager viewManager)
     {
         super("Signup", viewManager);
         this.DEFAULT_SIZE = new Dimension(WINDOW_DEFAULT_SIZE.width/4, WINDOW_DEFAULT_SIZE.height/4);
+        this.state = new SignupState();
     }
 
     public SignupState getState()
     {
-        return signupState;
+        return state;
     }
 
     public void setState(SignupState state)
     {
-        this.signupState = state;
+        this.state = state;
     }
 
 }

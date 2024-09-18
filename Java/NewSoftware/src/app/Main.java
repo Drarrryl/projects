@@ -7,12 +7,14 @@ import interface_adapter.Game.GameViewModel;
 import interface_adapter.Login.LoginViewModel;
 import interface_adapter.MainMenu.MainMenuViewModel;
 import interface_adapter.Options.OptionsViewModel;
+import interface_adapter.Profile.ProfileViewModel;
 import interface_adapter.Signup.SignupViewModel;
 import interface_adapter.user.UserViewModel;
 import view.Game.GameView;
 import view.Login.LoginView;
 import view.MainMenu.MainMenuView;
 import view.Options.OptionsView;
+import view.Profile.ProfileView;
 import view.Signup.SignupView;
 import view.User.UserView;
 import view.ViewManager;
@@ -36,7 +38,10 @@ public class Main {
         GameViewModel gameViewModel = new GameViewModel(viewManager);
         GameView gameView = GameFactory.createGameView(viewManager, gameViewModel, dataAccess);
 
-        UserViewModel userViewModel = new UserViewModel(viewManager, gameViewModel);
+        ProfileViewModel profileViewModel = new ProfileViewModel(viewManager);
+        ProfileView profileView = ProfileFactory.createView(viewManager, profileViewModel, dataAccess);
+
+        UserViewModel userViewModel = new UserViewModel(viewManager, gameViewModel, profileViewModel);
         UserView userView = UserFactory.createUserView(viewManager, userViewModel, dataAccess);
 
         OptionsViewModel optionsViewModel = new OptionsViewModel(viewManager);
@@ -48,6 +53,7 @@ public class Main {
         LoginViewModel loginViewModel = new LoginViewModel(viewManager, signupViewModel, mainMenuViewModel);
         LoginView loginView = LoginFactory.createLoginView(viewManager, loginViewModel, dataAccess);
 
+
         // FOR TESTING THE TEAM VIEW
         viewManager.addView(loginView, loginViewModel.getName());
         viewManager.addView(signupView, signupViewModel.getName());
@@ -55,6 +61,7 @@ public class Main {
         viewManager.addView(optionsView, optionsViewModel.getName());
         viewManager.addView(userView, userViewModel.getName());
         viewManager.addView(gameView, gameViewModel.getName());
+        viewManager.addView(profileView, profileViewModel.getName());
         viewManager.switchToView(loginViewModel.getName());
         viewManager.setResolution(loginViewModel.DEFAULT_SIZE);
 

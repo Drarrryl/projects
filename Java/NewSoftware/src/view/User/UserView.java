@@ -5,6 +5,8 @@ import interface_adapter.user.UserViewModel;
 import view.View;
 
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +20,10 @@ public class UserView extends View {
         super(userViewModel);
         this.userController = userController;
 
+        ProfilePanel profilePanel = new ProfilePanel(userViewModel.getLoggedInUser(), userViewModel, true);
+
         JPanel titlePanel = new JPanel();
+        titlePanel.add(profilePanel);
 
         JPanel buttonPanel = new JPanel();
         mainMenuButton = new JButton(userViewModel.MAINMENU_BUTTON_STRING);
@@ -31,6 +36,7 @@ public class UserView extends View {
             @Override
             public void actionPerformed(ActionEvent e) {
                 userController.mainMenu();
+                userViewModel.getState().setPfpStatus(false);
             }
         });
 
@@ -38,6 +44,14 @@ public class UserView extends View {
             @Override
             public void actionPerformed(ActionEvent e) {
                 userController.startGame(userViewModel.getLoggedInUser());
+                userViewModel.getState().setPfpStatus(false);
+            }
+        });
+
+        profilePanel.mainButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Button Pressed");
             }
         });
 

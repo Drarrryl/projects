@@ -4,12 +4,10 @@ import com.google.gson.*;
 import entity.User;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class DataAccess implements DataAccessInterface{
 
-    private final String dataPath = "./data.json";
+    private final String dataPath = "./src/data_access/data.json";
     private final String fileName = "data.json";
     private JsonObject data;
     private final APIInterface api = new API();

@@ -25,6 +25,8 @@ public class MainMenuPresenter implements MainMenuOutputBoundary {
         viewManager.setResolution(userViewModel.DEFAULT_SIZE);
         userViewModel.setLoggedInUser(user.getUser());
         userViewModel.getState().setUsername(user.getUsername());
+        userViewModel.getState().setHighscore(user.getHighscore());
+        userViewModel.getState().setPfpStatus(true);
     }
 
     @Override

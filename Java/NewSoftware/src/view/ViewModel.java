@@ -1,5 +1,7 @@
 package view;
 
+import interface_adapter.State;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -47,26 +49,26 @@ public abstract class ViewModel {
         }
     }
 
-    public void SetComponents(JPanel panel, String type, Color color) {
+    public void SetComponents(JComponent component, String type, Color color) {
         if (type.equals("Background")) {
-            panel.setBackground(color);
+            component.setBackground(color);
         } else if (type.equals("Foreground")) {
-            panel.setForeground(color);
+            component.setForeground(color);
         }
 
-        for (Component component : panel.getComponents()) {
+        for (Component curr_component : component.getComponents()) {
             if (type.equals("Background")) {
-                component.setBackground(color);
+                curr_component.setBackground(color);
             } else if (type.equals("Foreground")) {
-                component.setForeground(color);
-                if (component instanceof JTextField) {
-                    ((JTextField) component).setCaretColor(color);
-                } else if (component instanceof JPasswordField) {
-                    ((JPasswordField) component).setCaretColor(color);
+                curr_component.setForeground(color);
+                if (curr_component instanceof JTextField) {
+                    ((JTextField) curr_component).setCaretColor(color);
+                } else if (curr_component instanceof JPasswordField) {
+                    ((JPasswordField) curr_component).setCaretColor(color);
                 }
             }
-            if (component instanceof JPanel) {
-                SetComponents((JPanel) component, type, color);
+            if (curr_component instanceof JComponent) {
+                SetComponents((JComponent) curr_component, type, color);
             }
         }
     }

@@ -3,6 +3,7 @@ package interface_adapter.user;
 import entity.User;
 import interface_adapter.Game.GameViewModel;
 import interface_adapter.MainMenu.MainMenuViewModel;
+import interface_adapter.Profile.ProfileViewModel;
 import view.Game.GameView;
 import view.ViewManager;
 import view.ViewModel;
@@ -20,15 +21,18 @@ public class UserViewModel extends ViewModel {
     public final String MAINMENU_BUTTON_STRING = "Back To Main Menu";
 
     private GameViewModel gameViewModel;
+    private ProfileViewModel profileViewModel;
 
-    private UserState state = new UserState();
+    private UserState state;
 
-    public UserViewModel(ViewManager viewManager, GameViewModel gameViewModel)
+    public UserViewModel(ViewManager viewManager, GameViewModel gameViewModel, ProfileViewModel profileViewModel)
     {
         super("User", viewManager);
 
         loggedInUser = null;
         this.gameViewModel = gameViewModel;
+        this.profileViewModel = profileViewModel;
+        this.state = new UserState();
     }
 
     public UserState getState()
@@ -53,5 +57,6 @@ public class UserViewModel extends ViewModel {
     }
 
     public GameViewModel getGameViewModel() { return this.gameViewModel; }
+    public ProfileViewModel getProfileViewModel() { return this.profileViewModel; }
 
 }

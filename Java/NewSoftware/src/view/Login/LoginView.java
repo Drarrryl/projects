@@ -27,6 +27,7 @@ public class LoginView extends View implements PropertyChangeListener {
     public LoginView(LoginViewModel loginViewModel, LoginController loginController)
     {
         super(loginViewModel);
+        this.loginViewModel = loginViewModel;
         this.loginController = loginController;
 
         loginButton = new JButton(LoginViewModel.LOGIN_BUTTON_STRING);
@@ -55,9 +56,7 @@ public class LoginView extends View implements PropertyChangeListener {
                     public void actionPerformed(ActionEvent e) {
                         if(e.getSource().equals(loginButton))
                         {
-                            String username = loginViewModel.getState().getUsername();
-                            String password = loginViewModel.getState().getPassword();
-                            loginController.execute(username, password);
+                            execute();
                         }
                     }
                 }
@@ -103,6 +102,9 @@ public class LoginView extends View implements PropertyChangeListener {
 
                     @Override
                     public void keyPressed(KeyEvent e) {
+                        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                            execute();
+                        }
                     }
 
                     @Override
@@ -115,6 +117,12 @@ public class LoginView extends View implements PropertyChangeListener {
         this.add(buttonPanel);
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         loginViewModel.SetTheme(this, "Default");
+    }
+
+    public void execute() {
+        String username = loginViewModel.getState().getUsername();
+        String password = loginViewModel.getState().getPassword();
+        loginController.execute(username, password);
     }
 
     @Override

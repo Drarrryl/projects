@@ -13,14 +13,14 @@ public class GameViewModel extends ViewModel {
     public String PLAY_AGAIN_BUTTON_STRING = "Play Again";
     public String EXIT_GAME_BUTTON_STRING = "Exit Game";
 
+    private GameState state = new GameState();
+
     public GameViewModel(ViewManager viewManager)
     {
         super("Game", viewManager);
 
         loggedInUser = null;
     }
-
-    private GameState state = new GameState();
 
     public GameState getState()
     {

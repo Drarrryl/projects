@@ -1,24 +1,26 @@
-package interface_adapter.Options;
+package interface_adapter.Profile;
 
+import entity.User;
 import interface_adapter.State;
 
-import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-public class OptionsState implements State {
+public class ProfileState implements State {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    Dimension defaultRes;
-    String defaultTheme;
+    private User loggedInUser;
 
-    public OptionsState(Dimension size) {
-        defaultRes = size;
-        defaultTheme = "Default";
+    public ProfileState() {
+
     }
 
-    public Dimension getDefaultRes() { return defaultRes; }
+    public User getLoggedInUser() {
+        return loggedInUser;
+    }
 
-    public String getDefaultTheme() { return defaultTheme; }
+    public void setLoggedInUser(User loggedInUser) {
+        this.loggedInUser = loggedInUser;
+    }
 
     @Override
     public String getUsername() {
