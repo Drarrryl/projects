@@ -9,4 +9,8 @@ public class ProfileController {
     public ProfileController(ProfileInputBoundary profileInteractor) {
         this.profileInteractor = profileInteractor;
     }
+
+    public void back() {
+        profileInteractor.back();
+    }
 }

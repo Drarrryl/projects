@@ -38,6 +38,9 @@ public class UserPresenter implements UserOutputBoundary
         viewManager.setResolution(profileViewModel.DEFAULT_SIZE);
         ProfileState state = profileViewModel.getProfileState();
         state.setLoggedInUser(user.getUser());
+        state.setUsername(user.getUser().getUsername());
+        state.setHighscore(user.getHighscore());
+        state.setStatus(true);
     }
 
 

@@ -29,10 +29,11 @@ public class UserInteractor implements UserInputBoundary {
     @Override
     public void start(UserInputData inputData) {
         User user = inputData.getUser();
+        long highscore = userDataAccessObject.readHighscore(user.getUsername());
 
-        user.setHighscore(userDataAccessObject.readHighscore(user.getUsername()));
+        user.setHighscore(highscore);
 
-        UserOutputData outputData = new UserOutputData(user);
+        UserOutputData outputData = new UserOutputData(user, highscore);
 
         userPresenter.prepareStartView(outputData);
     }
@@ -45,8 +46,9 @@ public class UserInteractor implements UserInputBoundary {
     @Override
     public void profile(UserInputData inputData) {
         User user = inputData.getUser();
+        long highscore = userDataAccessObject.readHighscore(user.getUsername());
 
-        UserOutputData outputData = new UserOutputData(user);
+        UserOutputData outputData = new UserOutputData(user, highscore);
 
         userPresenter.prepareProfileView(outputData);
     }

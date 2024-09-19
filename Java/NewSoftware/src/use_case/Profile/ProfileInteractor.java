@@ -12,4 +12,8 @@ public class ProfileInteractor implements ProfileInputBoundary {
         this.userDataAccess = userDataAccess;
         this.presenter = presenter;
     }
+
+    public void back() {
+        presenter.prepareBackView();
+    }
 }

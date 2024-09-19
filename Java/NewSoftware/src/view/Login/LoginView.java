@@ -48,8 +48,6 @@ public class LoginView extends View implements PropertyChangeListener {
         passwordPanel.add(new JLabel(LoginViewModel.PASSWORD_FIELD_STRING));
         passwordPanel.add(passwordInputField);
 
-
-
         loginButton.addActionListener(
                 new ActionListener() {
                     @Override

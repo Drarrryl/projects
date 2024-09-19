@@ -30,7 +30,7 @@ public class MainMenuView extends View implements PropertyChangeListener {
         JLabel loggedInLabel = new JLabel(MainMenuViewModel.LOGGED_IN_AS_STRING);
         if (!Objects.equals(mainMenuViewModel.getLoggedInUser(), null)) {
             loggedInLabel = new JLabel(MainMenuViewModel.LOGGED_IN_AS_STRING + mainMenuViewModel.getLoggedInUser().getUsername());
-        } else System.out.println("Failed to find User");
+        }
         titlePanel.add(titleLabel);
         titlePanel.add(loggedInLabel);
         titlePanel.setLayout(new GridLayout(2, 1));

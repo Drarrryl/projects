@@ -221,6 +221,7 @@ public class GameView extends View implements Runnable {
         //phase[0] = "stop";
 
         buttonPanel.add(startButton, 0);
+        buttonPanel.remove(playAgainButton);
 
         running = false;
         gameController.resetObjs();

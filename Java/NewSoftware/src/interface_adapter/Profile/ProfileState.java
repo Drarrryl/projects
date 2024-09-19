@@ -9,6 +9,9 @@ import java.beans.PropertyChangeSupport;
 public class ProfileState implements State {
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private User loggedInUser;
+    private String username;
+    private long highscore;
+    private boolean pfpStatus;
 
     public ProfileState() {
 
@@ -24,12 +27,26 @@ public class ProfileState implements State {
 
     @Override
     public String getUsername() {
-        return null;
+        return username;
     }
 
     @Override
     public long getHighscore() {
-        return 0;
+        return highscore;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setHighscore(long score) {
+        this.highscore = score;
+    }
+
+    public void setStatus(boolean status) {
+        boolean oldStatus = this.pfpStatus;
+        this.pfpStatus = status;
+        pcs.firePropertyChange("status", oldStatus, status);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
